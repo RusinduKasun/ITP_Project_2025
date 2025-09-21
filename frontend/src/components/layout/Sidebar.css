@@ -1,0 +1,40 @@
+.sidebar {
+  width: 220px;
+  min-height: calc(100vh - 60px);
+  background-color: #f0f0f0; /* Light grey background */
+  float: left;
+  padding-top: 20px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin-bottom: 5px;
+}
+
+.sidebar-nav a {
+  display: block;
+  padding: 12px 20px;
+  color: #4a4a4a; /* Dark grey text */
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-radius: 0 4px 4px 0;
+}
+
+.sidebar-nav a:hover {
+  background-color: #e8e8e8; /* Lighter grey on hover */
+  padding-left: 25px;
+  color: #2d6a4f; /* Dark green on hover */
+}
+
+.sidebar-nav a.active {
+  background-color: #e8f5e9; /* Very light green background */
+  color: #2d6a4f; /* Dark green text */
+  border-left: 4px solid #2d6a4f; /* Dark green accent */
+  font-weight: 500;
+}
