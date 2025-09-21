@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { AuthProvider } from './Context/AuthContext.jsx';
 import Navbar from './Components/Navbar.jsx';
 import Footer from './Components/Footer.jsx';
@@ -26,106 +26,50 @@ import ProtectedRoute from './Components/ProtectedRoute.jsx';
 import AdminRoute from './Components/AdminRoute.jsx';
 import './App.css';
 
+function RootLayout() {
+  return (
+    <div className="min-h-screen bg-secondary-50 flex flex-col">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8 flex-1">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 function App() {
+  const router = createBrowserRouter([
+    {
+      element: <RootLayout />,
+      children: [
+        { index: true, element: <Home /> },
+        { path: "/login", element: <Login /> },
+        { path: "/forgot-password", element: <ForgotPassword /> },
+        { path: "/reset-password", element: <ResetPassword /> },
+        { path: "/register", element: <Register /> },
+        { path: "/profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
+        { path: "/admin-dashboard", element: <AdminRoute><AdminDashboard /></AdminRoute> },
+        { path: "/inventory-dashboard", element: <ProtectedRoute><InventoryDashboard /></ProtectedRoute> },
+        { path: "/supplier-dashboard", element: <ProtectedRoute><SupplierDashboard /></ProtectedRoute> },
+        { path: "/finance-dashboard", element: <ProtectedRoute><FinanceDashboard /></ProtectedRoute> },
+        { path: "/order-dashboard", element: <ProtectedRoute><OrderDashboard /></ProtectedRoute> },
+        { path: "/products", element: <Products /> },
+        { path: "/cart", element: <Cart /> },
+        { path: "/contact", element: <Contact /> },
+        { path: "/about", element: <About /> },
+        { path: "/checkout", element: <ProtectedRoute><Address /></ProtectedRoute> },
+        { path: "/payment", element: <ProtectedRoute><Payment /></ProtectedRoute> },
+        { path: "/ordersummary", element: <ProtectedRoute><OrderSummary /></ProtectedRoute> },
+        { path: "/ordertracking", element: <OrderTracking /> },
+        { path: "*", element: <div style={{textAlign:'center', padding:40}}><h2>Page not found</h2><p>Return to the <a href="/">home page</a>.</p></div> },
+      ],
+    },
+  ]);
+
   return (
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-secondary-50 flex flex-col">
-          <Navbar />
-          <main className="container mx-auto px-4 py-8 flex-1">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/register" element={<Register />} />
-              {/* Case-insensitive aliases for supplier dashboard to avoid blank page due to path casing */}
-              <Route path="/SupplierDashboard" element={<Navigate to="/supplier-dashboard" replace />} />
-              <Route path="/supplierDashboard" element={<Navigate to="/supplier-dashboard" replace />} />
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin-dashboard" 
-                element={
-                  <AdminRoute>
-                    <AdminDashboard />
-                  </AdminRoute>
-                } 
-              />
-              <Route 
-                path="/inventory-dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <InventoryDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/supplier-dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <SupplierDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/finance-dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <FinanceDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/order-dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <OrderDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="/products" element={<Products />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/about" element={<About />} />
-              <Route 
-                path="/checkout" 
-                element={
-                  <ProtectedRoute>
-                    <Address />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/payment" 
-                element={
-                  <ProtectedRoute>
-                    <Payment />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/ordersummary" 
-                element={
-                  <ProtectedRoute>
-                    <OrderSummary />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="/ordertracking" element={<OrderTracking />} />
-              {/* fallback for unmatched routes */}
-              <Route path="*" element={<div style={{textAlign:'center', padding:40}}><h2>Page not found</h2><p>Return to the <a href="/">home page</a>.</p></div>} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
+      <RouterProvider router={router} />
     </AuthProvider>
   );
 }

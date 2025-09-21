@@ -24,19 +24,33 @@ const Navbar = () => {
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
-    // Get cart count from localStorage
-    const storedCount = localStorage.getItem("cartCount");
-    setCartCount(storedCount ? parseInt(storedCount) : 0);
+    // Get cart count from per-user localStorage
+    const getCount = () => {
+      if (!user) return 0;
+      const uid = user._id || user.id || user.email;
+      const key = `cartCount_user_${uid}`;
+      return parseInt(localStorage.getItem(key) || '0');
+    };
+    setCartCount(getCount());
 
     // Update on storage change (multi-tab support)
     const handleStorage = (e) => {
-      if (e.key === "cartCount") {
+      // If storage key is user-scoped cart count for current user, update
+      if (!user) return;
+      const uid = user._id || user.id || user.email;
+      const key = `cartCount_user_${uid}`;
+      if (e.key === key) {
         setCartCount(e.newValue ? parseInt(e.newValue) : 0);
       }
     };
     // Also listen for a custom event so same-tab updates are reflected immediately
     const handleCartUpdated = () => {
-      const current = parseInt(localStorage.getItem('cartCount') || '0');
+      const current = (() => {
+        if (!user) return 0;
+        const uid = user._id || user.id || user.email;
+        const key = `cartCount_user_${uid}`;
+        return parseInt(localStorage.getItem(key) || '0');
+      })();
       setCartCount(current);
     };
 

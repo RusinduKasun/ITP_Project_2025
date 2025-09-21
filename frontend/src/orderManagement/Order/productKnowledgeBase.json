@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Jackfruit Noodles 400g",
+    "price": "800 LKR",
+    "description": "Savory noodles made with jackfruit extract for a unique Sri Lankan twist.",
+    "benefits": ["High fiber", "Locally sourced"],
+    "usage": "Boil for 4-6 minutes and serve with your favorite curry or sauce.",
+    "category": "Jackfruit"
+  },
+  {
+    "id": 2,
+    "name": "Durian Syrup 250ml",
+    "price": "1,200 LKR",
+    "description": "Concentrated durian syrup perfect for drinks, desserts and marinades.",
+    "benefits": ["Rich flavor", "Long shelf life"],
+    "usage": "Mix 1 part syrup to 6 parts water or use as a topping for desserts.",
+    "category": "Durian"
+  },
+  {
+    "id": 3,
+    "name": "Wood Apple Cordial 500ml",
+    "price": "380 LKR",
+    "description": "A tangy cordial made from ripe wood apples, ideal for refreshing drinks.",
+    "benefits": ["Vitamin C", "Traditionally made"],
+    "usage": "Dilute with water or soda for a refreshing beverage.",
+    "category": "Wood Apple"
+  },
+  {
+    "id": 4,
+    "name": "Banana Chips 200g",
+    "price": "220 LKR",
+    "description": "Crispy, lightly salted banana chips made from local varieties.",
+    "benefits": ["Snackable", "No artificial preservatives"],
+    "usage": "Ready to eat as a snack or with dips.",
+    "category": "Banana"
+  }
+]

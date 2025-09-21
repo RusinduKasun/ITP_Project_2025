@@ -1,3 +1,47 @@
+/* Floating Action Button for Chatbot */
+.chatbot-fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #4caf50;
+  color: #fff;
+  font-size: 2rem;
+  border: none;
+  box-shadow: 0 4px 16px rgba(44,175,80,0.18);
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.chatbot-fab:hover {
+  background: #388e3c;
+}
+
+.chatbot-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.3rem;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.chatbot-header {
+  position: relative;
+}
+
+.chatbot-scrollable {
+  max-height: 220px;
+  overflow-y: auto;
+}
 .chatbot-container {
   position: fixed;
   bottom: 32px;

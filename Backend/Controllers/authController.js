@@ -127,11 +127,16 @@ exports.login = async (req, res) => {
       }
 
       const tempToken = generateTempToken(user._id);
-      return res.json({
+      const responseBody = {
         message: '2FA code sent to your email',
         twofaRequired: true,
         tempToken
-      });
+      };
+      // Development helper: optionally return OTP directly to client when SHOW_OTPS=true
+      if (process.env.SHOW_OTPS === 'true') {
+        responseBody.devOtp = otp; // DO NOT enable in production
+      }
+      return res.json(responseBody);
     }
 
     // Otherwise, proceed with normal login

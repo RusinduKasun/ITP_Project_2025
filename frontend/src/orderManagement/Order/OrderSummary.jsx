@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateOrderPDF } from './OrderSummaryPDF';
 import './OrderSummary.css';
+import { useAuth } from '../../Context/AuthContext.jsx';
 
 const whatsappNumber = '0711701408';
 
@@ -10,12 +11,19 @@ const OrderSummary = () => {
   const [products, setProducts] = useState([]);
   const [address, setAddress] = useState({});
   const [showPopup, setShowPopup] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     // Read ordered products from localCart when backend is unavailable / protected
     try {
-      const local = JSON.parse(localStorage.getItem('localCart') || '[]');
-      setProducts(local);
+      if (!user) {
+        setProducts([]);
+      } else {
+        const uid = user._id || user.id || user.email;
+        const cartKey = `localCart_user_${uid}`;
+        const local = JSON.parse(localStorage.getItem(cartKey) || '[]');
+        setProducts(local);
+      }
     } catch (e) {
       setProducts([]);
     }
@@ -42,7 +50,7 @@ const OrderSummary = () => {
   };
 
   const getTotal = () => {
-    return products.reduce((acc, item) => acc + Number(item.age || 0) * (item.quantity || 1), 0);
+    return products.reduce((acc, item) => acc + Number(item.price || 0) * (item.quantity || 1), 0);
   };
 
   return (
@@ -81,7 +89,7 @@ const OrderSummary = () => {
                     <td>{idx + 1}</td>
                     <td>{p.name}</td>
                     <td>{p.quantity}</td>
-                    <td>{p.age}</td>
+                    <td>{p.price}</td>
                   </tr>
                 ))}
                 <tr className="total-row">
