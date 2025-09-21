@@ -1,0 +1,139 @@
+.summary-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ffffff 0%, #e9f8e7 100%);
+  font-family: 'Poppins', sans-serif;
+  padding: 2rem;
+}
+
+.summary-card {
+  background: #ffffff;
+  padding: 2rem 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 128, 0, 0.15);
+  width: 480px;
+  text-align: center;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.summary-card h2 {
+  color: #388e3c;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.summary-details {
+  background: #e8f5e9;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  font-size: 1rem;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.products-table th {
+  background: #4caf50;
+  color: #fff;
+  padding: 10px;
+  font-weight: 600;
+}
+
+.products-table td {
+  padding: 10px;
+  text-align: center;
+}
+
+.products-table tbody tr:nth-child(even) {
+  background: #f1f8f4;
+}
+
+.total-row {
+  background: #d0f0d3 !important;
+  font-weight: bold;
+}
+
+.summary-card button {
+  display: block;
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 12px;
+  background: #4caf50;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.summary-card button:hover {
+  background: #388e3c;
+  transform: scale(1.03);
+}
+
+.empty-msg {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.whatsapp-floating {
+  display: inline-block;
+  margin-top: 1rem;
+  background: #25d366;
+  color: white;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+.whatsapp-floating:hover {
+  background: #128c7e;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.popup-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  text-align: center;
+  animation: popIn 0.4s ease;
+}
+
+.popup-box h3 {
+  color: #388e3c;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
