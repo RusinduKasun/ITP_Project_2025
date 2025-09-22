@@ -26,5 +26,5 @@ const SupplierSchema = new mongoose.Schema({
   notes: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
-
+// Add timestamps to track creation and updates
 export default mongoose.model('Supplier', SupplierSchema);
