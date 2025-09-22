@@ -15,5 +15,5 @@ const orderSchema = new mongoose.Schema({
     default: 'Order Placed',
   },
 });
-
+// Add timestamps to track creation and updates
 export default mongoose.model('Order', orderSchema);

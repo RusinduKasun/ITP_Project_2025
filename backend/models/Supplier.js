@@ -4,7 +4,7 @@ const PriceSchema = new mongoose.Schema({
   fruit: { type: String, required: true },
   pricePerUnit: { type: Number, required: true }
 }, { _id: false });
-
+// Add timestamps to track creation and updates
 const SupplierSchema = new mongoose.Schema({
   supplierId: { type: String, required: true, unique: true },
   name: { type: String, required: true },
