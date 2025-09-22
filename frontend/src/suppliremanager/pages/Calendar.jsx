@@ -24,7 +24,7 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
-
+// Custom styles for the modal
 export default function Calendar() {
   // State variables (ස්ථාවරයන්) නිර්වචනය කරනවා
   const [orders, setOrders] = useState([]);
@@ -47,7 +47,7 @@ export default function Calendar() {
     load();
     loadSuppliers();
   }, []);
-
+// suppliers වලින් fruits ලැයිස්තුව හදනවා
   // suppliers වලින් fruits ලැයිස්තුව හදනවා
   useEffect(() => {
     const allFruits = suppliers.flatMap(s => s.fruits || []);

@@ -19,10 +19,10 @@ import Modal from 'react-modal';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 
 Modal.setAppElement('#root');
-
+// Custom styles for the modal
 // Simplified greenish color palette
 const COLORS = ['#22c55e', '#16a34a', '#15803d', '#4ade80', '#86efac'];
-
+// Custom styles for the modal
 export default function Dashboard() {
   // මෙහිදී state variable එකක් නිර්මාණය කරයි orders, suppliers, loading, error, stats, modalIsOpen, selectedOrder සඳහා
   const [orders, setOrders] = useState([]);
