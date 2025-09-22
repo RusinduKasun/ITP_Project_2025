@@ -8,6 +8,7 @@ import incomeRoutes from "./routes/incomeRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import wastageRoutes from "./routes/wastageRoutes.js";
 import productConfigRoutes from "./routes/productConfigRoutes.js";
+import financeRoutes from "./routes/financeRoutes.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use("/api/products", productConfigRoutes);
+app.use("/api/finance", financeRoutes);
 
 // Connect to MongoDB
 connectDB().then(() => {
@@ -77,5 +79,7 @@ app.listen(PORT, () => {
   console.log(`- POST   /api/incomes         (Create new income)`);
   console.log(`- PUT    /api/incomes/:id     (Update income)`);
   console.log(`- DELETE /api/incomes/:id     (Delete income)`);
+  console.log(`- GET    /api/finance/summary (Finance overview)`);
+  console.log(`- GET    /api/finance/break-even (Break-even analysis)`);
   console.log(`\n====================================\n`);
 });
