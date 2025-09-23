@@ -1,85 +1,68 @@
-// backend/server.js
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import connectDB from "./config/db.js";
-import expenseRoutes from "./routes/expenseRoutes.js";
-import incomeRoutes from "./routes/incomeRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import wastageRoutes from "./routes/wastageRoutes.js";
-import productConfigRoutes from "./routes/productConfigRoutes.js";
-import financeRoutes from "./routes/financeRoutes.js";
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import path from 'path';
+import connectDB from './config/db.js';
+// Supplier Routes
+import suppliersRoute from './routes/Supplier/suppliers.js';
+import ordersRoute from './routes/Supplier/orders.js';
+// Finance Routes
+import expenseRoutes from './routes/Finance/expenseRoutes.js';
+import incomeRoutes from './routes/Finance/incomeRoutes.js';
+import wastageRoutes from './routes/Finance/wastageRoutes.js';
+import productConfigRoutes from './routes/Finance/productConfigRoutes.js';
+import financeRoutes from './routes/Finance/financeRoutes.js';
+// Customer Routes
+import productOrderRoute from './routes/Customer/productOrderroute.js';
+import addressRoute from './routes/Customer/AddressRouter.js';
+// Admin Routes
+import adminRoutes from './routes/Admin/adminRoutes.js';
+import authRoutes from './routes/Admin/authRoutes.js';
+import userRoutes from './routes/Admin/userRoutes.js';
+// Inventory Routes
+import inventoryRoutes from './routes/Inventory/inventoryRoute.js';
+import productionRoutes from './routes/Inventory/productionRoute.js';
+import fruitRoutes from "./routes/Inventory/fruitRoute.js";
 
 dotenv.config();
-
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
 }));
-app.use(express.json());
+// Allow larger JSON payloads (e.g., base64 images) up to 10MB
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Simple request logger (helps debugging)
-app.use((req, res, next) => {
-  console.log(`[${req.method}] ${req.originalUrl}`);
-  next();
-});
-
-// Routes
-app.use("/api/products", productConfigRoutes);
-app.use("/api/finance", financeRoutes);
-
-// Connect to MongoDB
-connectDB().then(() => {
-  console.log('✅ MongoDB connection successful');
-}).catch(err => {
-  console.error('❌ MongoDB connection error:', err);
-});
-
-// Debug middleware for all routes
-app.use((req, res, next) => {
-  console.log(`[Debug] Accessing: ${req.method} ${req.originalUrl}`);
-  next();
-});
+// Serve uploaded files statically from /uploads
+app.use('/uploads', express.static(path.resolve('./uploads')));
+// Connect DB
+connectDB();
 
 // Routes
-app.use("/api/expenses", expenseRoutes);
-app.use("/api/incomes", incomeRoutes);
-app.use("/api/users", userRoutes);
+app.use('/api/suppliers', suppliersRoute);
+app.use('/api/orders', ordersRoute);
+// Finance Routes
+app.use('/api/products', productConfigRoutes);
+app.use('/api/finance', financeRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/incomes', incomeRoutes);
+app.use('/api/wastage', wastageRoutes);
+// Customer Routes
+app.use('/api/productOrder', productOrderRoute);
+app.use('/api/addresses', addressRoute);
+// Admin Routes
+app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+// Inventory Routes
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/production', productionRoutes);
+app.use("/api/fruits", fruitRoutes);
 
-// Add wastage routes
-app.use("/api/wastage", wastageRoutes);
+app.get('/', (req, res) => res.send('Fruit Seller API is running'));
 
-// Health check route
-app.get("/", (req, res) => {
-  res.send("Taste of Ceylon Backend is running 🚀");
-});
-
-// 404 handler
-app.use((req, res, next) => {
-  res.status(404).json({ message: "Route not found" });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error("Server Error:", err.stack);
-  res.status(500).json({ message: "Internal Server Error" });
-});
-
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`\n=== Taste of Ceylon Backend Server ===`);
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 URL: http://localhost:${PORT}`);
-  console.log(`\nAvailable Routes:`);
-  console.log(`- GET    /api/incomes         (Get all incomes)`);
-  console.log(`- POST   /api/incomes         (Create new income)`);
-  console.log(`- PUT    /api/incomes/:id     (Update income)`);
-  console.log(`- DELETE /api/incomes/:id     (Delete income)`);
-  console.log(`- GET    /api/finance/summary (Finance overview)`);
-  console.log(`- GET    /api/finance/break-even (Break-even analysis)`);
-  console.log(`\n====================================\n`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

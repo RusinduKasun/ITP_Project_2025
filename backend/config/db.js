@@ -1,73 +1,61 @@
-// backend/config/db.js
-import mongoose from "mongoose";
+// db.js
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const connectDB = async () => {
-  const maxRetries = 5;
-  let retryCount = 0;
-  
-  const connectWithRetry = async () => {
-    try {
-      const conn = await mongoose.connect(process.env.MONGO_URI, {
-        serverSelectionTimeoutMS: 60000,
-        socketTimeoutMS: 90000,
-        connectTimeoutMS: 60000,
-        retryWrites: true,
-        w: 'majority',
-        maxPoolSize: 10,
-        heartbeatFrequencyMS: 3000,
-        family: 4 // Use IPv4, skip trying IPv6
-      });
+  try {
+    // MongoDB connection options for better reliability and performance
+    const mongooseOptions = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s if server not found
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+      family: 4, // Use IPv4, skip trying IPv6
+    };
 
-      mongoose.connection.on('connected', () => {
-        console.log(`✅ MongoDB Atlas Connected: ${conn.connection.host}`);
-        console.log('✅ MongoDB connection successful');
-        console.log(`MongoDB Connection State: ${mongoose.connection.readyState}`);
-        // Reset retry count on successful connection
-        retryCount = 0;
-      });
-
-      mongoose.connection.on('error', (err) => {
-        console.error('MongoDB connection error:', err);
-        if (err.name === 'MongoServerSelectionError') {
-          console.error('Could not connect to MongoDB server. Please check your connection string and network.');
-          process.exit(1);
-        }
-      });
-
-      mongoose.connection.on('disconnected', () => {
-        console.log('MongoDB disconnected. Mongoose will try to reconnect automatically...');
-      });
-
-      // Graceful shutdown
-      process.on('SIGINT', async () => {
-        try {
-          await mongoose.connection.close();
-          console.log('MongoDB connection closed through app termination');
-          process.exit(0);
-        } catch (err) {
-          console.error('Error during graceful shutdown:', err);
-          process.exit(1);
-        }
-      });
-
-      return conn;
-
-    } catch (error) {
-      console.error('MongoDB connection error:', error);
-      console.error('Please check your MongoDB Atlas connection string and internet connection');
-      if (retryCount < maxRetries) {
-        retryCount++;
-        console.log(`Connection failed. Retrying in 5 seconds... Attempt ${retryCount} of ${maxRetries}`);
-        setTimeout(connectWithRetry, 5000);
-      } else {
-        console.error('Failed to connect to MongoDB after maximum retries');
-        process.exit(1);
-      }
+    // Ensure MONGO_URI is defined
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI environment variable is not defined');
     }
-  };
 
-  // Start the connection process
-  return await connectWithRetry();
+    // Connect to MongoDB
+    const conn = await mongoose.connect(process.env.MONGO_URI, mongooseOptions);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+
+    // Handle MongoDB connection events
+    mongoose.connection.on('disconnected', () => {
+      console.warn('MongoDB disconnected. Attempting to reconnect...');
+    });
+
+    mongoose.connection.on('reconnected', () => {
+      console.log('MongoDB reconnected successfully');
+    });
+
+    mongoose.connection.on('error', (err) => {
+      console.error(`MongoDB connection error: ${err.message}`);
+    });
+
+  } catch (error) {
+    console.error(`MongoDB Connection Error: ${error.message}`);
+    // Retry connection after a delay
+    setTimeout(connectDB, 5000);
+    // Don't exit process to allow retries
+  }
 };
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  try {
+    await mongoose.connection.close();
+    console.log('MongoDB connection closed due to app termination');
+    process.exit(0);
+  } catch (err) {
+    console.error(`Error closing MongoDB connection: ${err.message}`);
+    process.exit(1);
+  }
+});
 
 export default connectDB;

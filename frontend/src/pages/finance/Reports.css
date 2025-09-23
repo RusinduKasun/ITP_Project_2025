@@ -99,6 +99,7 @@
   background: white;
   border-radius: 12px;
   padding: 8px;
+  gap: 25px;
   margin-bottom: 30px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   overflow-x: auto;
@@ -116,7 +117,6 @@
   color: var(--grey-dark);
   transition: all 0.2s;
   white-space: nowrap;
-  min-width: 150px;
 }
 
 .tab-button:hover {

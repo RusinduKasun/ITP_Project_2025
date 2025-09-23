@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Expenses.css";
+import Header from "../../components/Finance/layout/Header";
+import Sidebar from "../../components/Finance/layout/Sidebar";
+import Nav from "../Home/Nav/Nav.jsx";
 
 const EXPENSE_CATEGORIES = [
   "Food",
@@ -182,180 +185,200 @@ const Expenses = () => {
   }, []);
 
   return (
-    <div className="expenses-container">
-      <h2>💰 Expenses Management</h2>
+    <div className="finance-page expenses-page">
+      <div className="fixed w-full z-30 top-0">
+        <Nav />
 
-      {error && <div className="error-message">{error}</div>}
-
-      {/* Form */}
-      <form className="expense-form" onSubmit={handleSubmit}>
-        <div className="expense-id-display">
-          Expense ID:{" "}
-          {editingId
-            ? formData.expenseID
-            : generateNextExpenseID(lastExpenseID)}
-        </div>
-
-        <input
-          type="text"
-          placeholder="Description"
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          disabled={loading}
-          required
-        />
-
-        <input
-          type="number"
-          placeholder="Amount (Rs)"
-          value={formData.amount}
-          onChange={(e) =>
-            setFormData({ ...formData, amount: Number(e.target.value) })
-          }
-          min="0"
-          step="0.01"
-          disabled={loading}
-          required
-        />
-
-        {/* Category dropdown */}
-        <select
-          value={formData.category}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              category: e.target.value,
-            })
-          }
-          disabled={loading}
-        >
-          <option value="">Choose Category</option>
-          {EXPENSE_CATEGORIES.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-
-        {/* Product Type dropdown */}
-        <select
-          value={formData.productType}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              productType: e.target.value,
-            })
-          }
-          disabled={loading}
-        >
-          <option value="">Choose Product Type</option>
-          {PRODUCT_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </option>
-          ))}
-        </select>
-
-        <input
-          type="date"
-          value={formData.expenseDate}
-          onChange={(e) =>
-            setFormData({ ...formData, expenseDate: e.target.value })
-          }
-          disabled={loading}
-          required
-        />
-
-        <p className="helper-text">
-          Select a <b>Category</b>, a <b>Product Type</b>, or <b>both</b> (at least one is required).
-        </p>
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Saving..." : editingId ? "Update Expense" : "Add Expense"}
-        </button>
-      </form>
-
-      {/* Filters */}
-      <div className="filters">
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search by description..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
-        <select
-          className="category-filter"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="All">All Categories</option>
-          {EXPENSE_CATEGORIES.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
+      <div className="fixed w-full z-20 top-16">
+        <Header />
       </div>
 
-      {loading ? (
-        <div className="loading-spinner">Loading expenses...</div>
-      ) : expenses.length === 0 ? (
-        <div className="empty-state">
-          No expenses found. Add your first expense using the form above.
-        </div>
-      ) : (
-        <>
-          <table className="expense-table">
-            <thead>
-              <tr>
-                <th>Expense ID</th>
-                <th>Description</th>
-                <th>Amount (Rs)</th>
-                <th>Category</th>
-                <th>Product Type</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredExpenses.map((exp) => (
-                <tr key={exp._id}>
-                  <td>{exp.expenseID}</td>
-                  <td>{exp.description}</td>
-                  <td>Rs {exp.amount.toLocaleString()}</td>
-                  <td>{exp.category || "-"}</td>
-                  <td>{exp.productType || "-"}</td>
-                  <td>{new Date(exp.expenseDate).toLocaleDateString()}</td>
-                  <td className="action-buttons">
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit(exp)}
-                      disabled={loading}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDelete(exp._id)}
-                      disabled={loading}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="fixed top-32 left-0 z-10">
+        <Sidebar />
+      </div>
 
-          <h3 className="total-amount">
-            Total Expenses: Rs {totalAmount.toLocaleString()}
-          </h3>
-        </>
-      )}
+      <div className="pl-64 pt-36 app-container">
+        <div className="content-wrapper">
+          <div className="main-content">
+          <div className="expenses-container">
+            <h2>💰 Expenses Management</h2>
+
+            {error && <div className="error-message">{error}</div>}
+
+            {/* Form */}
+            <form className="expense-form" onSubmit={handleSubmit}>
+              <div className="expense-id-display">
+                Expense ID:{" "}
+                {editingId
+                  ? formData.expenseID
+                  : generateNextExpenseID(lastExpenseID)}
+              </div>
+
+              <input
+                type="text"
+                placeholder="Description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                disabled={loading}
+                required
+              />
+
+              <input
+                type="number"
+                placeholder="Amount (Rs)"
+                value={formData.amount}
+                onChange={(e) =>
+                  setFormData({ ...formData, amount: Number(e.target.value) })
+                }
+                min="0"
+                step="0.01"
+                disabled={loading}
+                required
+              />
+
+              {/* Category dropdown */}
+              <select
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    category: e.target.value,
+                  })
+                }
+                disabled={loading}
+              >
+                <option value="">Choose Category</option>
+                {EXPENSE_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+
+              {/* Product Type dropdown */}
+              <select
+                value={formData.productType}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    productType: e.target.value,
+                  })
+                }
+                disabled={loading}
+              >
+                <option value="">Choose Product Type</option>
+                {PRODUCT_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="date"
+                value={formData.expenseDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, expenseDate: e.target.value })
+                }
+                disabled={loading}
+                required
+              />
+
+              <p className="helper-text">
+                Select a <b>Category</b>, a <b>Product Type</b>, or <b>both</b> (at least one is required).
+              </p>
+
+              <button type="submit" disabled={loading}>
+                {loading ? "Saving..." : editingId ? "Update Expense" : "Add Expense"}
+              </button>
+            </form>
+
+            {/* Filters */}
+            <div className="filters">
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search by description..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+
+              <select
+                className="category-filter"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="All">All Categories</option>
+                {EXPENSE_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {loading ? (
+              <div className="loading-spinner">Loading expenses...</div>
+            ) : expenses.length === 0 ? (
+              <div className="empty-state">
+                No expenses found. Add your first expense using the form above.
+              </div>
+            ) : (
+              <>
+                <table className="expense-table">
+                  <thead>
+                    <tr>
+                      <th>Expense ID</th>
+                      <th>Description</th>
+                      <th>Amount (Rs)</th>
+                      <th>Category</th>
+                      <th>Product Type</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredExpenses.map((exp) => (
+                      <tr key={exp._id}>
+                        <td>{exp.expenseID}</td>
+                        <td>{exp.description}</td>
+                        <td>Rs {exp.amount.toLocaleString()}</td>
+                        <td>{exp.category || "-"}</td>
+                        <td>{exp.productType || "-"}</td>
+                        <td>{new Date(exp.expenseDate).toLocaleDateString()}</td>
+                        <td className="action-buttons">
+                          <button
+                            className="edit-btn"
+                            onClick={() => handleEdit(exp)}
+                            disabled={loading}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="delete-btn"
+                            onClick={() => handleDelete(exp._id)}
+                            disabled={loading}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <h3 className="total-amount">
+                  Total Expenses: Rs {totalAmount.toLocaleString()}
+                </h3>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+        </div>
+      </div>
     </div>
   );
 };

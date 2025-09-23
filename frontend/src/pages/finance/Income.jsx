@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Income.css";
-
+import Header from "../../components/Finance/layout/Header";
+import Sidebar from "../../components/Finance/layout/Sidebar";
+import Nav from "../Home/Nav/Nav.jsx";
 // Constants
 const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Online Payment", "Other"];
 
@@ -61,7 +63,7 @@ const Income = () => {
       }
       return max;
     }, 0);
-    
+
     const nextId = maxId + 1;
     return `INC${nextId.toString().padStart(3, "0")}`;
   };
@@ -118,7 +120,7 @@ const Income = () => {
   const simulateCustomerOrder = () => {
     console.log("=== SIMULATE BUTTON CLICKED ===");
     console.log("Product configs length:", productConfigs.length);
-    
+
     try {
       let randomProduct;
       let randomQuantity = Math.floor(Math.random() * 10) + 1;
@@ -129,7 +131,7 @@ const Income = () => {
         const fallbackProducts = [
           {
             name: "jackfruit",
-            category: "Jackfruit Products", 
+            category: "Jackfruit Products",
             price: 150.00,
             variants: ["chips", "noodles", "cordial", "rawfruit"]
           },
@@ -152,7 +154,7 @@ const Income = () => {
             variants: ["chips", "juice", "rawfruit"]
           }
         ];
-        
+
         randomProduct = fallbackProducts[Math.floor(Math.random() * fallbackProducts.length)];
       } else {
         randomProduct = productConfigs[Math.floor(Math.random() * productConfigs.length)];
@@ -196,7 +198,7 @@ const Income = () => {
     alert("Form submitted! Check console for details.");
     console.log("=== FORM SUBMIT CLICKED ===");
     console.log("Form data being submitted:", formData);
-    
+
     if (!formData.description || !formData.category || !formData.productType) {
       console.log("Missing required fields!");
       setError("Please fill in all required fields");
@@ -206,7 +208,7 @@ const Income = () => {
     try {
       setLoading(true);
       console.log("Sending data to backend...");
-      
+
       if (editingId) {
         console.log("Updating existing record:", editingId);
         await axios.put(
@@ -222,7 +224,7 @@ const Income = () => {
         };
         console.log("Data being sent:", dataToSend);
         console.log("Data being sent (JSON):", JSON.stringify(dataToSend, null, 2));
-        
+
         const response = await axios.post("http://localhost:5000/api/incomes", dataToSend);
         console.log("Backend response:", response.data);
       }
@@ -248,10 +250,10 @@ const Income = () => {
       console.error("Status code:", err.response?.status);
       console.error("Error message:", err.message);
       console.error("Error stack:", err.stack);
-      
+
       // Show detailed error in alert for debugging
       alert(`Error: ${err.response?.data?.error || err.message}\nDetails: ${JSON.stringify(err.response?.data?.details || [])}`);
-      
+
       setError(`Error saving income record: ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
@@ -307,176 +309,196 @@ const Income = () => {
   );
 
   return (
-    <div className="income-container">
-      <h2>📈 Income Management</h2>
-      {error && <div className="error-message">{error}</div>}
-
-      {/* Form */}
-      <div className="income-form-container">
-        <div className="form-actions">
-          <button
-            type="button"
-            className="simulate-order-btn"
-            onClick={simulateCustomerOrder}
-            disabled={loading}
-          >
-            🛍️ Auto-Fill Sample Order
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="income-form">
-          <input type="text" placeholder="Income ID" value={formData.incomeId} readOnly />
-          <input
-            type="text"
-            placeholder="Description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            required
-          />
-          <select
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            required
-          >
-            <option value="">Select Category</option>
-            {FRUIT_CATEGORIES.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-          <input
-            type="text"
-            placeholder="Product Type"
-            value={formData.productType}
-            onChange={(e) => setFormData({ ...formData, productType: e.target.value })}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Variant"
-            value={formData.variant}
-            onChange={(e) => setFormData({ ...formData, variant: e.target.value })}
-          />
-          <input
-            type="number"
-            placeholder="Quantity"
-            value={formData.quantity}
-            onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
-            required
-          />
-          <input
-            type="number"
-            placeholder="Unit Price"
-            value={formData.unitPrice}
-            onChange={(e) => setFormData({ ...formData, unitPrice: Number(e.target.value) })}
-            required
-          />
-          <select
-            value={formData.paymentMethod}
-            onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-          >
-            {PAYMENT_METHODS.map((m) => (
-              <option key={m}>{m}</option>
-            ))}
-          </select>
-          <input
-            type="text"
-            placeholder="Reference Number"
-            value={formData.referenceNumber}
-            onChange={(e) => setFormData({ ...formData, referenceNumber: e.target.value })}
-          />
-          <input
-            type="date"
-            value={formData.incomeDate}
-            onChange={(e) => setFormData({ ...formData, incomeDate: e.target.value })}
-          />
-          <textarea
-            placeholder="Notes"
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          />
-          <button type="submit" disabled={loading}>
-            {editingId ? "Update" : "Add"} Income
-          </button>
-        </form>
-
-        {/* Filters */}
-        <div className="filters">
-          <input
-            type="text"
-            placeholder="Search by description..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            <option value="All">All</option>
-            {FRUIT_CATEGORIES.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-        </div>
+    <div className="app-container">
+      <div className="fixed w-full z-30 top-0">
+        <Nav />
       </div>
 
-      {/* Table */}
-      {loading ? (
-        <p>Loading...</p>
-      ) : filteredIncomes.length === 0 ? (
-        <p>No records found.</p>
-      ) : (
-        <div className="table-container">
-          <table className="income-table">
-            <thead>
-              <tr>
-                <th>Income ID</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Product</th>
-                <th>Variant</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Total</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredIncomes.map((inc) => (
-                <tr key={inc._id}>
-                  <td>{inc.incomeId || "-"}</td>
-                  <td>{inc.description}</td>
-                  <td>{inc.category}</td>
-                  <td>{inc.productType}</td>
-                  <td>{inc.variant || "-"}</td>
-                  <td>{inc.quantity}</td>
-                  <td>Rs. {inc.unitPrice.toFixed(2)}</td>
-                  <td>Rs. {(inc.quantity * inc.unitPrice).toFixed(2)}</td>
-                  <td>{new Date(inc.incomeDate).toLocaleDateString()}</td>
-                  <td className="action-buttons">
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit(inc)}
-                      disabled={loading}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDelete(inc._id)}
-                      disabled={loading}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <h3 className="total-amount">
-            Total Income: Rs. {totalIncome.toLocaleString()}
-          </h3>
+      <div className="fixed w-full z-20 top-16">
+        <Header />
+      </div>
+
+      <div className="fixed top-32 left-0 z-10">
+        <Sidebar />
+      </div>
+
+      <div className="pl-64 pt-36 app-container">
+        <div className="content-wrapper">
+          <div className="main-content">
+          <div className="income-container">
+            <h2>📈 Income Management</h2>
+            {error && <div className="error-message">{error}</div>}
+
+            {/* Form */}
+            <div className="income-form-container">
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="simulate-order-btn"
+                  onClick={simulateCustomerOrder}
+                  disabled={loading}
+                >
+                  🛍️ Auto-Fill Sample Order
+                </button>
+              </div>
+              <form onSubmit={handleSubmit} className="income-form">
+                <input type="text" placeholder="Income ID" value={formData.incomeId} readOnly />
+                <input
+                  type="text"
+                  placeholder="Description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  required
+                />
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  required
+                >
+                  <option value="">Select Category</option>
+                  {FRUIT_CATEGORIES.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  placeholder="Product Type"
+                  value={formData.productType}
+                  onChange={(e) => setFormData({ ...formData, productType: e.target.value })}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Variant"
+                  value={formData.variant}
+                  onChange={(e) => setFormData({ ...formData, variant: e.target.value })}
+                />
+                <input
+                  type="number"
+                  placeholder="Quantity"
+                  value={formData.quantity}
+                  onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
+                  required
+                />
+                <input
+                  type="number"
+                  placeholder="Unit Price"
+                  value={formData.unitPrice}
+                  onChange={(e) => setFormData({ ...formData, unitPrice: Number(e.target.value) })}
+                  required
+                />
+                <select
+                  value={formData.paymentMethod}
+                  onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                >
+                  {PAYMENT_METHODS.map((m) => (
+                    <option key={m}>{m}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  placeholder="Reference Number"
+                  value={formData.referenceNumber}
+                  onChange={(e) => setFormData({ ...formData, referenceNumber: e.target.value })}
+                />
+                <input
+                  type="date"
+                  value={formData.incomeDate}
+                  onChange={(e) => setFormData({ ...formData, incomeDate: e.target.value })}
+                />
+                <textarea
+                  placeholder="Notes"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                />
+                <button type="submit" disabled={loading}>
+                  {editingId ? "Update" : "Add"} Income
+                </button>
+              </form>
+
+              {/* Filters */}
+              <div className="filters">
+                <input
+                  type="text"
+                  placeholder="Search by description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  <option value="All">All</option>
+                  {FRUIT_CATEGORIES.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Table */}
+            {loading ? (
+              <p>Loading...</p>
+            ) : filteredIncomes.length === 0 ? (
+              <p>No records found.</p>
+            ) : (
+              <div className="table-container">
+                <table className="income-table">
+                  <thead>
+                    <tr>
+                      <th>Income ID</th>
+                      <th>Description</th>
+                      <th>Category</th>
+                      <th>Product</th>
+                      <th>Variant</th>
+                      <th>Qty</th>
+                      <th>Unit Price</th>
+                      <th>Total</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredIncomes.map((inc) => (
+                      <tr key={inc._id}>
+                        <td>{inc.incomeId || "-"}</td>
+                        <td>{inc.description}</td>
+                        <td>{inc.category}</td>
+                        <td>{inc.productType}</td>
+                        <td>{inc.variant || "-"}</td>
+                        <td>{inc.quantity}</td>
+                        <td>Rs. {inc.unitPrice.toFixed(2)}</td>
+                        <td>Rs. {(inc.quantity * inc.unitPrice).toFixed(2)}</td>
+                        <td>{new Date(inc.incomeDate).toLocaleDateString()}</td>
+                        <td className="action-buttons">
+                          <button
+                            className="edit-btn"
+                            onClick={() => handleEdit(inc)}
+                            disabled={loading}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="delete-btn"
+                            onClick={() => handleDelete(inc._id)}
+                            disabled={loading}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <h3 className="total-amount">
+                  Total Income: Rs. {totalIncome.toLocaleString()}
+                </h3>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+        </div>
+      </div>
     </div>
   );
 };
