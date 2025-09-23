@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import axios from 'axios';
+import Header from "../../components/Finance/layout/Header";
+import Sidebar from "../../components/Finance/layout/Sidebar";
+import './ProfitMargin.css';
 
 // Configure axios defaults
 axios.defaults.baseURL = 'http://localhost:5000';
 axios.defaults.withCredentials = true;
-
-import './ProfitMargin.css';
 
 const ProfitMargin = () => {
   const [profitData, setProfitData] = useState({
@@ -18,7 +19,7 @@ const ProfitMargin = () => {
 
   const [timeframe, setTimeframe] = useState('monthly');
   const [selectedProduct, setSelectedProduct] = useState('all');
-  
+
   // Convert product type to lowercase to match backend model
   const normalizeProductType = (product) => {
     return product === 'all' ? product : product.toLowerCase();
@@ -35,7 +36,7 @@ const ProfitMargin = () => {
       console.log('No revenue data, returning zero margins');
       return { grossMargin: 0, operatingMargin: 0, netMargin: 0 };
     }
-    
+
     // Calculate total revenue from quantity * unitPrice for each record
     const totalRevenue = revenues.reduce((total, income) => {
       return total + (parseFloat(income.quantity || 0) * parseFloat(income.unitPrice || 0));
@@ -47,7 +48,7 @@ const ProfitMargin = () => {
     }, 0);
 
     console.log('Calculated totals:', { totalRevenue, totalExpenses });
-    
+
     const grossMargin = ((totalRevenue - totalExpenses) / totalRevenue) * 100;
     return {
       grossMargin,
@@ -65,7 +66,7 @@ const ProfitMargin = () => {
           axios.get(`/api/incomes?startDate=${dateRange.start}&endDate=${dateRange.end}&product=${normalizeProductType(selectedProduct)}`),
           axios.get(`/api/expenses?startDate=${dateRange.start}&endDate=${dateRange.end}&product=${normalizeProductType(selectedProduct)}`)
         ]);
-        
+
         console.log('API Response:', JSON.stringify({
           incomes: incomesRes.data,
           expenses: expensesRes.data
@@ -78,7 +79,7 @@ const ProfitMargin = () => {
           timeframe,
           selectedProduct
         );
-        
+
         console.log('Processed Data:', JSON.stringify(processedData, null, 2));
 
         setProfitData(processedData);
@@ -132,16 +133,16 @@ const ProfitMargin = () => {
         itemDate.setHours(0, 0, 0, 0);
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 999);
-        
-        return itemDate >= startDate && 
-               itemDate <= endDate && 
-               (product === 'all' || item.productType === product);
+
+        return itemDate >= startDate &&
+          itemDate <= endDate &&
+          (product === 'all' || item.productType === product);
       });
     };
 
     const filteredIncomes = filterData(incomes);
     const filteredExpenses = filterData(expenses);
-    
+
     console.log('Filtered Data:', JSON.stringify({
       incomes: filteredIncomes,
       expenses: filteredExpenses,
@@ -276,114 +277,122 @@ const ProfitMargin = () => {
   };
 
   return (
-    <div className="profit-margin-container">
-      <div className="controls-section">
-        <h2>Profit Margin Analysis</h2>
-        
-        <div className="filters">
-          <div className="filter-group">
-            <label>Time Frame</label>
-            <select 
-              value={timeframe}
-              onChange={(e) => setTimeframe(e.target.value)}
-            >
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-          </div>
+    <div className="app-container">
+      <Header />
+      <div className="content-wrapper">
+        <Sidebar />
+        <div className="main-content">
+          <div className="profit-margin-container">
+            <div className="controls-section">
+              <h2>Profit Margin Analysis</h2>
 
-          <div className="filter-group">
-            <label>Product</label>
-            <select 
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-            >
-              <option value="all">All Products</option>
-              <option value="jackfruit">Jackfruit</option>
-              <option value="woodapple">Wood Apple</option>
-              <option value="durian">Durian</option>
-              <option value="banana">Banana</option>
-            </select>
-          </div>
+              <div className="filters">
+                <div className="filter-group">
+                  <label>Time Frame</label>
+                  <select
+                    value={timeframe}
+                    onChange={(e) => setTimeframe(e.target.value)}
+                  >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </div>
 
-          <div className="date-range">
-            <div className="filter-group">
-              <label>From</label>
-              <input
-                type="date"
-                value={dateRange.start}
-                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-              />
+                <div className="filter-group">
+                  <label>Product</label>
+                  <select
+                    value={selectedProduct}
+                    onChange={(e) => setSelectedProduct(e.target.value)}
+                  >
+                    <option value="all">All Products</option>
+                    <option value="jackfruit">Jackfruit</option>
+                    <option value="woodapple">Wood Apple</option>
+                    <option value="durian">Durian</option>
+                    <option value="banana">Banana</option>
+                  </select>
+                </div>
+
+                <div className="date-range">
+                  <div className="filter-group">
+                    <label>From</label>
+                    <input
+                      type="date"
+                      value={dateRange.start}
+                      onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    />
+                  </div>
+                  <div className="filter-group">
+                    <label>To</label>
+                    <input
+                      type="date"
+                      value={dateRange.end}
+                      onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="filter-group">
-              <label>To</label>
-              <input
-                type="date"
-                value={dateRange.end}
-                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-              />
+
+            <div className="metrics-cards">
+              <div className="metric-card">
+                <h3>Gross Profit Margin</h3>
+                <div className="value">
+                  {profitData.margins.length > 0
+                    ? `${profitData.margins[profitData.margins.length - 1].grossMargin.toFixed(2)}%`
+                    : '0%'
+                  }
+                </div>
+              </div>
+              <div className="metric-card">
+                <h3>Operating Margin</h3>
+                <div className="value">
+                  {profitData.margins.length > 0
+                    ? `${profitData.margins[profitData.margins.length - 1].operatingMargin.toFixed(2)}%`
+                    : '0%'
+                  }
+                </div>
+              </div>
+              <div className="metric-card">
+                <h3>Net Profit Margin</h3>
+                <div className="value">
+                  {profitData.margins.length > 0
+                    ? `${profitData.margins[profitData.margins.length - 1].netMargin.toFixed(2)}%`
+                    : '0%'
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div className="charts-grid">
+              <div className="chart-container">
+                <h3>Margin Trends</h3>
+                <Line data={marginChartConfig} options={{
+                  responsive: true,
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Profit Margins Over Time'
+                    }
+                  }
+                }} />
+              </div>
+
+              <div className="chart-container">
+                <h3>Revenue vs Expenses</h3>
+                <Bar data={revenueExpenseChartConfig} options={{
+                  responsive: true,
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Revenue and Expenses Comparison'
+                    }
+                  }
+                }} />
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="metrics-cards">
-        <div className="metric-card">
-          <h3>Gross Profit Margin</h3>
-          <div className="value">
-            {profitData.margins.length > 0 
-              ? `${profitData.margins[profitData.margins.length - 1].grossMargin.toFixed(2)}%`
-              : '0%'
-            }
-          </div>
-        </div>
-        <div className="metric-card">
-          <h3>Operating Margin</h3>
-          <div className="value">
-            {profitData.margins.length > 0
-              ? `${profitData.margins[profitData.margins.length - 1].operatingMargin.toFixed(2)}%`
-              : '0%'
-            }
-          </div>
-        </div>
-        <div className="metric-card">
-          <h3>Net Profit Margin</h3>
-          <div className="value">
-            {profitData.margins.length > 0
-              ? `${profitData.margins[profitData.margins.length - 1].netMargin.toFixed(2)}%`
-              : '0%'
-            }
-          </div>
-        </div>
-      </div>
-
-      <div className="charts-grid">
-        <div className="chart-container">
-          <h3>Margin Trends</h3>
-          <Line data={marginChartConfig} options={{
-            responsive: true,
-            plugins: {
-              title: {
-                display: true,
-                text: 'Profit Margins Over Time'
-              }
-            }
-          }} />
-        </div>
-
-        <div className="chart-container">
-          <h3>Revenue vs Expenses</h3>
-          <Bar data={revenueExpenseChartConfig} options={{
-            responsive: true,
-            plugins: {
-              title: {
-                display: true,
-                text: 'Revenue and Expenses Comparison'
-              }
-            }
-          }} />
         </div>
       </div>
     </div>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Wastage.css';
-import WastageAnalytics from '../../components/analytics/WastageAnalytics';
-
+import WastageAnalytics from '../../components/Finance/analytics/WastageAnalytics';
+import Header from "../../components/Finance/layout/Header";
+import Sidebar from "../../components/Finance/layout/Sidebar";
+import Nav from "../Home/Nav/Nav.jsx";
 const WASTAGE_CATEGORIES = {
   'Collection/Transport': [
     'Damaged during transport',
@@ -84,7 +86,7 @@ export default function Wastage() {
       } else {
         await axios.post('http://localhost:5000/api/wastage', dataToSubmit);
       }
-      
+
       await fetchWastageRecords();
       resetForm();
       setEditingId(null);
@@ -154,7 +156,7 @@ export default function Wastage() {
   // Delete wastage record
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this record?')) return;
-    
+
     setLoading(true);
     try {
       await axios.delete(`http://localhost:5000/api/wastage/${id}`);
@@ -171,183 +173,203 @@ export default function Wastage() {
   }, []);
 
   return (
-    <div className="wastage-container">
-      <h2>Wastage Calculator</h2>
+    <div className="wastage-root">
+      <div className="fixed w-full z-30 top-0">
+        <Nav />
+      </div>
 
-      {error && <div className="error-message">{error}</div>}
+      <div className="fixed w-full z-20 top-16">
+        <Header />
+      </div>
 
-      {/* Wastage Recording Form */}
-      <form className="wastage-form" onSubmit={handleSubmit}>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Fruit Type</label>
-            <select
-              value={formData.fruitType}
-              onChange={(e) => setFormData({ ...formData, fruitType: e.target.value })}
-              required
-            >
-              <option value="">Select Fruit Type</option>
-              {FRUIT_CATEGORIES.map((fruit) => (
-                <option key={fruit} value={fruit}>{fruit}</option>
-              ))}
-            </select>
-          </div>
+      <div className="fixed top-32 left-0 z-10">
+        <Sidebar />
+      </div>
 
-          <div className="form-group">
-            <label>Wastage Category</label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              required
-            >
-              <option value="">Select Category</option>
-              {Object.keys(WASTAGE_CATEGORIES).map((category) => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
+      <div className="pl-64 pt-36 app-container">
+        <div className="content-wrapper">
+          <div className="main-content">
+            <div className="wastage-container">
+            <h2>Wastage Calculator</h2>
+
+            {error && <div className="error-message">{error}</div>}
+
+            {/* Wastage Recording Form */}
+            <form className="wastage-form" onSubmit={handleSubmit}>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Fruit Type</label>
+                  <select
+                    value={formData.fruitType}
+                    onChange={(e) => setFormData({ ...formData, fruitType: e.target.value })}
+                    required
+                  >
+                    <option value="">Select Fruit Type</option>
+                    {FRUIT_CATEGORIES.map((fruit) => (
+                      <option key={fruit} value={fruit}>{fruit}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Wastage Category</label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {Object.keys(WASTAGE_CATEGORIES).map((category) => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Specific Reason</label>
+                  <select
+                    value={formData.specificReason}
+                    onChange={(e) => setFormData({ ...formData, specificReason: e.target.value })}
+                    required
+                    disabled={!formData.category}
+                  >
+                    <option value="">Select Specific Reason</option>
+                    {specificReasons.map((reason) => (
+                      <option key={reason} value={reason}>{reason}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Date</label>
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Quantity (kg)</label>
+                  <input
+                    type="number"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Unit Price (Rs)</label>
+                  <input
+                    type="number"
+                    value={formData.unitPrice}
+                    onChange={(e) => setFormData({ ...formData, unitPrice: e.target.value })}
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Notes</label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Add any additional notes about the wastage..."
+                />
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" disabled={loading}>
+                  {loading ? 'Saving...' : editingId ? 'Update Wastage' : 'Record Wastage'}
+                </button>
+                {editingId && (
+                  <button type="button" onClick={resetForm} disabled={loading}>
+                    Cancel Edit
+                  </button>
+                )}
+              </div>
+            </form>
+
+            {/* Wastage Records Table */}
+            <div className="wastage-records">
+              <h3>Recent Wastage Records</h3>
+              {wastageRecords.length === 0 ? (
+                <p>No wastage records found.</p>
+              ) : (
+                <table className="wastage-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Fruit Type</th>
+                      <th>Category</th>
+                      <th>Reason</th>
+                      <th>Quantity (kg)</th>
+                      <th>Unit Price (Rs)</th>
+                      <th>Total Loss (Rs)</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {wastageRecords.map((record) => (
+                      <tr key={record._id}>
+                        <td>{new Date(record.date).toLocaleDateString()}</td>
+                        <td>{record.fruitType}</td>
+                        <td>{record.category}</td>
+                        <td>{record.specificReason}</td>
+                        <td>{record.quantity.toFixed(2)}</td>
+                        <td>{record.unitPrice.toFixed(2)}</td>
+                        <td>Rs. {(record.quantity * record.unitPrice).toFixed(2)}</td>
+                        <td className="action-buttons">
+                          <button
+                            className="edit-btn"
+                            onClick={() => handleEdit(record)}
+                            disabled={loading}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="delete-btn"
+                            onClick={() => handleDelete(record._id)}
+                            disabled={loading}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                        Total Wastage Cost:
+                      </td>
+                      <td colSpan="2" style={{ fontWeight: 'bold' }}>
+                        Rs. {wastageRecords.reduce((total, record) =>
+                          total + (record.quantity * record.unitPrice), 0).toFixed(2)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+
+              {/* Analytics Dashboard */}
+              {wastageRecords.length > 0 && (
+                <WastageAnalytics wastageRecords={wastageRecords} />
+              )}
+            </div>
           </div>
         </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label>Specific Reason</label>
-            <select
-              value={formData.specificReason}
-              onChange={(e) => setFormData({ ...formData, specificReason: e.target.value })}
-              required
-              disabled={!formData.category}
-            >
-              <option value="">Select Specific Reason</option>
-              {specificReasons.map((reason) => (
-                <option key={reason} value={reason}>{reason}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>Date</label>
-            <input
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label>Quantity (kg)</label>
-            <input
-              type="number"
-              value={formData.quantity}
-              onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-              min="0"
-              step="0.01"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Unit Price (Rs)</label>
-            <input
-              type="number"
-              value={formData.unitPrice}
-              onChange={(e) => setFormData({ ...formData, unitPrice: e.target.value })}
-              min="0"
-              step="0.01"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label>Notes</label>
-          <textarea
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            placeholder="Add any additional notes about the wastage..."
-          />
-        </div>
-
-        <div className="form-actions">
-          <button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : editingId ? 'Update Wastage' : 'Record Wastage'}
-          </button>
-          {editingId && (
-            <button type="button" onClick={resetForm} disabled={loading}>
-              Cancel Edit
-            </button>
-          )}
-        </div>
-      </form>
-
-      {/* Wastage Records Table */}
-      <div className="wastage-records">
-        <h3>Recent Wastage Records</h3>
-        {wastageRecords.length === 0 ? (
-          <p>No wastage records found.</p>
-        ) : (
-          <table className="wastage-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Fruit Type</th>
-                <th>Category</th>
-                <th>Reason</th>
-                <th>Quantity (kg)</th>
-                <th>Unit Price (Rs)</th>
-                <th>Total Loss (Rs)</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {wastageRecords.map((record) => (
-                <tr key={record._id}>
-                  <td>{new Date(record.date).toLocaleDateString()}</td>
-                  <td>{record.fruitType}</td>
-                  <td>{record.category}</td>
-                  <td>{record.specificReason}</td>
-                  <td>{record.quantity.toFixed(2)}</td>
-                  <td>{record.unitPrice.toFixed(2)}</td>
-                  <td>Rs. {(record.quantity * record.unitPrice).toFixed(2)}</td>
-                  <td className="action-buttons">
-                    <button 
-                      className="edit-btn"
-                      onClick={() => handleEdit(record)} 
-                      disabled={loading}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      className="delete-btn"
-                      onClick={() => handleDelete(record._id)} 
-                      disabled={loading}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                  Total Wastage Cost:
-                </td>
-                <td colSpan="2" style={{ fontWeight: 'bold' }}>
-                  Rs. {wastageRecords.reduce((total, record) => 
-                    total + (record.quantity * record.unitPrice), 0).toFixed(2)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        )}
-
-        {/* Analytics Dashboard */}
-        {wastageRecords.length > 0 && (
-          <WastageAnalytics wastageRecords={wastageRecords} />
-        )}
+      </div>
       </div>
     </div>
   );
