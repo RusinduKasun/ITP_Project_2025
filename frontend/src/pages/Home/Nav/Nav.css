@@ -1,0 +1,90 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f4f4f4;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #000;
+  padding: 16px 32px;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+  font-size: 26px;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.navbar-icons{
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+}
+
+.nav-links li a {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  position: relative;
+  padding: 6px 0;
+}
+
+.nav-links li a::after {
+  content: '';
+  height: 2px;
+  width: 0;
+  background: white;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  transition: 0.3s ease;
+}
+
+.nav-links li a:hover::after {
+  width: 100%;
+}
+
+/* Profile icon */
+.profile-icon {
+  margin-left: 20px;
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.profile-icon a {
+  color: white;
+}
+
+.profile-icon:hover {
+  transform: scale(1.1);
+}
+.cart-icon {
+  color: white;
+  font-size: 22px;
+  transition: transform 0.3s ease;
+}
+
+.cart-icon:hover {
+  transform: scale(1.1);
+}
