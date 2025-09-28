@@ -1,5 +1,8 @@
 # Taste of Ceylon 🍃
-
+<img width="1817" height="802" alt="image" src="https://github.com/user-attachments/assets/db695298-b992-4d60-898a-216be03f6f61" />
+<br/>
+<br/>
+<br/>
 A full-stack fruit supply chain management system for Sri Lankan fruit businesses, built with React, Node.js, Express, and MongoDB.
 
 ---
