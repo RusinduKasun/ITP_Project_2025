@@ -141,5 +141,7 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 [MIT](LICENSE)
 
 ---
+<p align="center">  
+  Made with ❤️ by the Taste of Ceylon Team  
+</p>
 
-**Made with ❤️ by the Taste of Ceylon Team**
