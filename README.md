@@ -125,10 +125,7 @@ The frontend will be available at [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## Screenshots
 
-<!-- Add screenshots/gifs here -->
-<img width="1817" height="802" alt="image" src="https://github.com/user-attachments/assets/db695298-b992-4d60-898a-216be03f6f61" />
 
 ---
 
