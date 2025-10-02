@@ -60,14 +60,12 @@ const generateTempToken = (userId) => {
 };
 
 // Login User
+
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-<<<<<<< HEAD
-=======
     // Log login attempts for debugging (avoid logging passwords in production)
     console.log(`Login attempt for username/email: ${username} from IP: ${req.ip}`);
->>>>>>> 23b237e349add8e13cc82753aa12c6977990fe75
 
     // Find user by username or email and include password for comparison
     const user = await User.findOne({

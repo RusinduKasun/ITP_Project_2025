@@ -29,11 +29,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-<<<<<<< HEAD
-app.use(cors({
-  origin: 'http://localhost:5173',
-=======
 // Allow localhost origins used by dev frontend and local tools
 const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 app.use(cors({
@@ -46,7 +41,6 @@ app.use(cors({
       callback(null, false);
     }
   },
->>>>>>> 23b237e349add8e13cc82753aa12c6977990fe75
   credentials: true
 }));
 // Allow larger JSON payloads (e.g., base64 images) up to 10MB
@@ -74,21 +68,15 @@ app.use('/api/addresses', addressRoute);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-// Inventory Routes
-<<<<<<< HEAD
-=======
+
 // Mount notification routes first so '/api/inventory/notifications' does not collide with inventory/:id
 app.use('/api/inventory/notifications', notificationRoutes);
->>>>>>> 23b237e349add8e13cc82753aa12c6977990fe75
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/production', productionRoutes);
 app.use("/api/fruits", fruitRoutes);
 
 app.get('/', (req, res) => res.send('Fruit Seller API is running'));
 
-<<<<<<< HEAD
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-=======
 // Simple health endpoint for troubleshooting
 app.get('/health', (req, res) => res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' }));
 
@@ -104,4 +92,3 @@ const server = app.listen(PORT, host, () => {
     console.log(`Server running on port ${PORT}`);
   }
 });
->>>>>>> 23b237e349add8e13cc82753aa12c6977990fe75
