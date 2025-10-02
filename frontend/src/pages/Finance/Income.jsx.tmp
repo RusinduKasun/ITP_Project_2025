@@ -1,0 +1,396 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./Income.css";
+
+// Constants
+const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Online Payment", "Other"];
+
+// Category mapping for product types
+const CATEGORY_MAP = {
+  'jackfruit': 'Jackfruit Products',
+  'woodapple': 'Wood Apple Products',
+  'durian': 'Durian Products',
+  'banana': 'Banana Products',
+  'other': 'Other'
+};
+
+const Income = () => {
+  // State declarations
+  const [productConfigs, setProductConfigs] = useState([]);
+  const [selectedConfig, setSelectedConfig] = useState(null);
+  const [incomes, setIncomes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [formData, setFormData] = useState({
+    description: "",
+    category: "",
+    productType: "",
+    variant: "",
+    quantity: "",
+    unitPrice: "",
+    paymentMethod: "Cash",
+    referenceNumber: "",
+    notes: "",
+    incomeDate: new Date().toISOString().split("T")[0],
+  });
+
+  // Fetch product configurations
+  useEffect(() => {
+    const fetchProductConfigs = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/products/config');
+        setProductConfigs(response.data);
+      } catch (err) {
+        console.error('Error fetching product configs:', err);
+        setError('Failed to load product configurations');
+      }
+    };
+    fetchProductConfigs();
+  }, []);
+
+  // Generate random order reference
+  const generateOrderRef = () => {
+    const date = new Date();
+    const year = date.getFullYear().toString().slice(-2);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `ORD-${year}${month}${day}-${random}`;
+  };
+
+  // Simulate random order
+  const simulateOrder = () => {
+    if (productConfigs.length === 0) return;
+    
+    const randomConfig = productConfigs[Math.floor(Math.random() * productConfigs.length)];
+    const randomVariant = randomConfig.variants[Math.floor(Math.random() * randomConfig.variants.length)];
+    const randomQuantity = Math.floor(Math.random() * 10) + 1;
+
+    setFormData({
+      description: `Order - ${randomVariant.name} ${randomConfig.productType} (${randomVariant.unit})`,
+      category: CATEGORY_MAP[randomConfig.productType],
+      productType: randomConfig.productType,
+      variant: randomVariant.name,
+      quantity: randomQuantity,
+      unitPrice: randomVariant.unitPrice,
+      paymentMethod: PAYMENT_METHODS[Math.floor(Math.random() * PAYMENT_METHODS.length)],
+      referenceNumber: generateOrderRef(),
+      notes: `Simulated order - ${randomVariant.unit}`,
+      incomeDate: new Date().toISOString().split("T")[0],
+    });
+  };
+
+  // Handle product type change
+  const handleProductTypeChange = (type) => {
+    const config = productConfigs.find(c => c.productType === type);
+    setSelectedConfig(config);
+    setFormData(prev => ({
+      ...prev,
+      productType: type,
+      category: CATEGORY_MAP[type] || 'Other',
+      variant: '',
+      unitPrice: ''
+    }));
+  };
+
+  // Handle variant change
+  const handleVariantChange = (variantName) => {
+    if (selectedConfig) {
+      const variant = selectedConfig.variants.find(v => v.name === variantName);
+      if (variant) {
+        setFormData(prev => ({
+          ...prev,
+          variant: variantName,
+          unitPrice: variant.unitPrice
+        }));
+      }
+    }
+  };
+
+  // Fetch income records
+  const fetchIncomes = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get("http://localhost:5000/api/incomes");
+      setIncomes(response.data);
+    } catch (err) {
+      setError("Failed to fetch income records");
+      console.error("Error fetching incomes:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIncomes();
+  }, []);
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    
+    if (!formData.description.trim() || !formData.productType || !formData.variant || 
+        !formData.quantity || formData.quantity <= 0 || !formData.unitPrice || formData.unitPrice <= 0) {
+      setError("Please fill in all required fields with valid values");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post("http://localhost:5000/api/incomes", {
+        ...formData,
+        referenceNumber: formData.referenceNumber || generateOrderRef(),
+      });
+      
+      setFormData({
+        description: "",
+        category: "",
+        productType: "",
+        variant: "",
+        quantity: "",
+        unitPrice: "",
+        paymentMethod: "Cash",
+        referenceNumber: "",
+        notes: "",
+        incomeDate: new Date().toISOString().split("T")[0],
+      });
+
+      fetchIncomes();
+    } catch (err) {
+      setError(err.response?.data?.message || "Error saving income record");
+      console.error("Error saving income:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter incomes based on search and category
+  const filteredIncomes = incomes.filter((inc) => {
+    const matchesCategory = selectedCategory === "All" || inc.category === selectedCategory;
+    const matchesSearch = inc.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  return (
+    <div className="income-container">
+      <h2>Income Management</h2>
+
+      {error && <div className="error-message">{error}</div>}
+
+      {/* Simulate Order Button */}
+      <div className="simulate-order">
+        <button
+          type="button"
+          onClick={simulateOrder}
+          className="simulate-btn"
+          disabled={loading || productConfigs.length === 0}
+        >
+          Simulate Customer Order
+        </button>
+      </div>
+
+      {/* Income Form */}
+      <form className="income-form" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Description"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          required
+        />
+
+        <select
+          value={formData.productType}
+          onChange={(e) => handleProductTypeChange(e.target.value)}
+          required
+        >
+          <option value="">Select Product Type</option>
+          {productConfigs.map((config) => (
+            <option key={config.productType} value={config.productType}>
+              {CATEGORY_MAP[config.productType]}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={formData.variant}
+          onChange={(e) => handleVariantChange(e.target.value)}
+          disabled={!formData.productType}
+          required
+        >
+          <option value="">Select Variant</option>
+          {selectedConfig?.variants.map((variant) => (
+            <option key={variant.name} value={variant.name}>
+              {variant.name} ({variant.unit})
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          placeholder="Quantity"
+          value={formData.quantity}
+          onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
+          min="1"
+          required
+        />
+
+        <input
+          type="number"
+          placeholder="Unit Price (Rs)"
+          value={formData.unitPrice}
+          onChange={(e) => setFormData({ ...formData, unitPrice: Number(e.target.value) })}
+          min="0"
+          step="0.01"
+          required
+        />
+
+        <select
+          value={formData.paymentMethod}
+          onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+        >
+          {PAYMENT_METHODS.map((method) => (
+            <option key={method} value={method}>{method}</option>
+          ))}
+        </select>
+
+        <input
+          type="text"
+          placeholder="Reference Number (Optional)"
+          value={formData.referenceNumber}
+          onChange={(e) => setFormData({ ...formData, referenceNumber: e.target.value })}
+        />
+
+        <input
+          type="date"
+          value={formData.incomeDate}
+          onChange={(e) => setFormData({ ...formData, incomeDate: e.target.value })}
+          required
+        />
+
+        <textarea
+          placeholder="Notes (Optional)"
+          value={formData.notes}
+          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          rows="2"
+        />
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Saving..." : "Add Income"}
+        </button>
+      </form>
+
+      {/* Filters */}
+      <div className="filters">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search by description..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <select
+          className="category-filter"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          <option value="All">All Categories</option>
+          {Object.values(CATEGORY_MAP).map((category) => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Income Records */}
+      {loading ? (
+        <div className="loading">Loading...</div>
+      ) : filteredIncomes.length === 0 ? (
+        <div className="no-records">No income records found</div>
+      ) : (
+        <>
+          <table className="income-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Product</th>
+                <th>Variant</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredIncomes.map((income) => (
+                <tr key={income._id}>
+                  <td>{income.description}</td>
+                  <td>{income.category}</td>
+                  <td>{income.productType}</td>
+                  <td>{income.variant}</td>
+                  <td>{income.quantity}</td>
+                  <td>Rs. {income.unitPrice?.toFixed(2)}</td>
+                  <td>Rs. {(income.quantity * income.unitPrice).toFixed(2)}</td>
+                  <td>{new Date(income.incomeDate).toLocaleDateString()}</td>
+                  <td>
+                    <button
+                      onClick={() => {
+                        const config = productConfigs.find(c => c.productType === income.productType);
+                        setSelectedConfig(config);
+                        setFormData({
+                          ...income,
+                          incomeDate: income.incomeDate.split('T')[0]
+                        });
+                      }}
+                      disabled={loading}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Are you sure you want to delete this record?')) {
+                          setLoading(true);
+                          try {
+                            await axios.delete(`http://localhost:5000/api/incomes/${income._id}`);
+                            fetchIncomes();
+                          } catch (err) {
+                            setError("Failed to delete record");
+                          } finally {
+                            setLoading(false);
+                          }
+                        }
+                      }}
+                      disabled={loading}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Summary */}
+          <div className="income-summary">
+            <h3>Income Summary</h3>
+            <div className="summary-content">
+              <p>
+                Total Income: Rs.{' '}
+                {filteredIncomes
+                  .reduce((sum, inc) => sum + (inc.quantity * inc.unitPrice), 0)
+                  .toFixed(2)}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default Income;
