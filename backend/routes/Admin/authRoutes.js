@@ -3,7 +3,6 @@ import {
     register,
     login,
     logout,
-    socialLogin,
     verifyTwoFactor,
     getCurrentUser,
     enableTwoFactor,
@@ -17,7 +16,6 @@ const router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
 router.post('/logout', logout);
-router.post('/social-login', socialLogin);
 router.post('/verify-2fa', verifyTwoFactor);
 
 // Protected routes

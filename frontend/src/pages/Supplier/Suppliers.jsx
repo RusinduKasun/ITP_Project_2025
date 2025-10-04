@@ -10,7 +10,6 @@ import 'react-toastify/dist/ReactToastify.css'
 import Header from '../../components/Supplier/Header'
 import Nav from '../../components/Supplier/Nav'
 import Footer from '../../components/Supplier/Footer'
-import Nav1 from '../../pages/Home/Nav/Nav';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -77,6 +76,10 @@ export default function Suppliers() {
       toast.error('Failed to load suppliers. Please try again.', {
         position: 'top-right',
         autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       })
     } finally {
       setLoading(false)
@@ -86,20 +89,11 @@ export default function Suppliers() {
   // Validation function
   const validate = () => {
     const newErrors = {}
-
-    // Name validation
     if (!form.name.trim()) newErrors.name = 'Supplier name is required'
-
-    // Phone number validation (numbers only, exactly 10 digits)
-    const phoneDigits = form.phone.replace(/\D/g, '')
     if (!form.phone.trim()) newErrors.phone = 'Phone number is required'
-    else if (!/^\d{10}$/.test(phoneDigits)) newErrors.phone = 'Phone number must be 10 digits'
-
-    // Email validation
+    else if (!/^\+?\d{9,15}$/.test(form.phone.trim().replace(/\s/g, ''))) newErrors.phone = 'Enter a valid phone number'
     if (!form.email.trim()) newErrors.email = 'Email is required'
     else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(form.email.trim())) newErrors.email = 'Enter a valid email address'
-
-    // Price list validation
     if (form.priceList.length === 0 || !form.priceList.some(item => item.fruit && item.pricePerKg)) {
       newErrors.priceList = 'At least one fruit and price is required'
     } else {
@@ -109,7 +103,6 @@ export default function Suppliers() {
         }
       })
     }
-
     return newErrors
   }
 
@@ -136,7 +129,14 @@ export default function Suppliers() {
         }
       }
       await createSupplier(cleanedForm)
-      toast.success('Supplier added successfully!', { position: 'top-right', autoClose: 3000 })
+      toast.success('Supplier added successfully!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      })
       setForm(prev => ({
         ...prev,
         name: '',
@@ -151,7 +151,14 @@ export default function Suppliers() {
       load()
     } catch (err) {
       console.error(err)
-      toast.error('Failed to add supplier. Please try again.', { position: 'top-right', autoClose: 3000 })
+      toast.error('Failed to add supplier. Please try again.', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      })
     }
   }
 
@@ -186,12 +193,23 @@ export default function Suppliers() {
 
   return (
     <>
-      <Nav1 />
+     
       <Nav />
       <div className="min-h-screen bg-white">
         <div className="container mx-auto px-6 py-8 max-w-7xl">
-          <ToastContainer position="top-right" autoClose={3000} />
-          {/* Header */}
+          {/* Toast Container */}
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+          {/* Header Section */}
           <div className="mb-8">
             <div className="flex items-center mb-2">
               <FontAwesomeIcon icon={faUsers} className="text-primary-green text-2xl mr-3" />
@@ -200,14 +218,16 @@ export default function Suppliers() {
             <p className="text-text-secondary">Manage your supplier network and relationships</p>
           </div>
 
-          {loading ? (
+          {loading && (
             <div className="flex flex-col items-center justify-center py-16">
               <FontAwesomeIcon icon={faSpinner} spin className="text-primary-green text-4xl mb-4" />
               <p className="text-text-secondary">Loading suppliers...</p>
             </div>
-          ) : (
+          )}
+
+          {!loading && (
             <ErrorBoundary>
-              {/* Search & Filter */}
+              {/* Search and Filter Bar */}
               <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
                 <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
                   <div className="relative flex-1 min-w-0">
@@ -238,7 +258,7 @@ export default function Suppliers() {
                   </div>
                   <button
                     onClick={openModal}
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200"
+                    className="bg-primary-green text-white px-6 py-3 rounded-lg hover:bg-[#266b2a] flex items-center transition-colors shadow-sm"
                   >
                     <FontAwesomeIcon icon={faPlus} className="mr-2" />
                     Add Supplier
@@ -251,8 +271,6 @@ export default function Suppliers() {
                   </p>
                 </div>
               </div>
-
-              {/* Modal Form */}
               <Modal
                 isOpen={modalIsOpen}
                 onRequestClose={closeModal}
@@ -264,13 +282,16 @@ export default function Suppliers() {
                   <button onClick={closeModal} className="text-text-secondary hover:text-destructive-red">&times;</button>
                 </div>
                 <form onSubmit={submit} className="space-y-6">
-                  {/* Basic Information */}
                   <div>
                     <h3 className="text-lg font-medium text-primary-green mb-2">Basic Information</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-text-secondary">Supplier ID</label>
-                        <input value="Auto-generated" disabled className="p-2 border rounded w-full bg-gray-100" />
+                        <input
+                          value="Auto-generated"
+                          disabled
+                          className="p-2 border rounded w-full bg-gray-100"
+                        />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-text-secondary">Supplier Name *</label>
@@ -298,13 +319,9 @@ export default function Suppliers() {
                       <div>
                         <label className="block text-sm font-medium text-text-secondary">Phone Number *</label>
                         <input
-                          type="text"
                           value={form.phone}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '');
-                            updateField('phone', value);
-                          }}
-                          placeholder="Enter 10-digit phone number"
+                          onChange={(e) => updateField('phone', e.target.value)}
+                          placeholder="+94 81 234 5678"
                           className={`p-2 border rounded w-full ${errors.phone ? 'border-red-400' : ''}`}
                           required
                         />
@@ -332,8 +349,6 @@ export default function Suppliers() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Fruit & Pricing */}
                   <div>
                     <h3 className="text-lg font-medium text-primary-green mb-2">Fruit Catalog & Pricing</h3>
                     {form.priceList.map((item, index) => (
@@ -356,7 +371,7 @@ export default function Suppliers() {
                             <button
                               type="button"
                               onClick={addPriceEntry}
-                              className="bg-primary-green text-green-600 p-2 rounded hover:bg-[#349639] hover:text-white transition-colors"
+                              className="bg-primary-green text-white p-2 rounded hover:bg-[#266b2a]"
                             >
                               <FontAwesomeIcon icon={faPlus} />
                             </button>
@@ -367,10 +382,10 @@ export default function Suppliers() {
                         )}
                       </div>
                     ))}
-                    {errors.priceList && <span className="text-destructive-red text-xs">{errors.priceList}</span>}
+                    {errors.priceList && (
+                      <span className="text-destructive-red text-xs">{errors.priceList}</span>
+                    )}
                   </div>
-
-                  {/* Bank Info */}
                   <div>
                     <h3 className="text-lg font-medium text-primary-green mb-2">Payment Information</h3>
                     <div className="grid grid-cols-2 gap-4">
@@ -403,8 +418,6 @@ export default function Suppliers() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Notes */}
                   <div>
                     <h3 className="text-lg font-medium text-primary-green mb-2">Additional Notes</h3>
                     <textarea
@@ -414,16 +427,23 @@ export default function Suppliers() {
                       className="p-2 border rounded w-full h-24"
                     />
                   </div>
-
-                  {/* Buttons */}
                   <div className="flex justify-end gap-4 mt-4">
-                    <button type="button" onClick={closeModal} className="bg-gray-300 text-text-primary p-2 rounded hover:bg-gray-400">Cancel</button>
-                    <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200">Add Supplier</button>
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="bg-gray-300 text-text-primary p-2 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-primary-green text-white p-2 rounded hover:bg-[#266b2a]"
+                    >
+                      Add Supplier
+                    </button>
                   </div>
                 </form>
               </Modal>
-
-              {/* Supplier List */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredSuppliers.length === 0 && (
                   <div className="col-span-full">
@@ -431,10 +451,16 @@ export default function Suppliers() {
                       <div className="text-8xl mb-4">📦</div>
                       <h3 className="text-xl font-medium text-text-primary mb-2">No suppliers found</h3>
                       <p className="text-text-secondary mb-6">
-                        {searchQuery || filterFruit ? 'Try adjusting your search or filter criteria' : 'Get started by adding your first supplier'}
+                        {searchQuery || filterFruit
+                          ? 'Try adjusting your search or filter criteria'
+                          : 'Get started by adding your first supplier'
+                        }
                       </p>
                       {!searchQuery && !filterFruit && (
-                        <button onClick={openModal} className="bg-primary-green text-white px-6 py-3 rounded-lg hover:bg-[#266b2a] inline-flex items-center">
+                        <button
+                          onClick={openModal}
+                          className="bg-primary-green text-white px-6 py-3 rounded-lg hover:bg-[#266b2a] inline-flex items-center"
+                        >
                           <FontAwesomeIcon icon={faPlus} className="mr-2" />
                           Add Your First Supplier
                         </button>
@@ -442,7 +468,9 @@ export default function Suppliers() {
                     </div>
                   </div>
                 )}
-                {filteredSuppliers.map(s => <SupplierCard key={s._id} supplier={s} onUpdate={load} />)}
+                {filteredSuppliers.map(s => (
+                  <SupplierCard key={s._id} supplier={s} onUpdate={load} />
+                ))}
               </div>
             </ErrorBoundary>
           )}

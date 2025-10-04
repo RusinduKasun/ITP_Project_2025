@@ -19,7 +19,7 @@ function AdminDashboard() {
             title: "Supplier Management",
             description: "Manage suppliers, track performance, and maintain vendor relationships",
             icon: "🏭",
-            color: "#eeeeeeff",
+            color: "#4CAF50",
             path: "/suppliersDash"
         },
         {

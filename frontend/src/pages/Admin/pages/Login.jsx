@@ -28,14 +28,18 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    console.log('handleSubmit called'); // <-- Add this line
 
     try {
+      console.log('Calling login function'); // <-- Add this line
       const result = await login(formData.username, formData.password);
+      console.log('Login result:', result); // <-- Existing debug line
 
       if (result.success && result.twofaRequired) {
         setTwofaRequired(true);
         setTempToken(result.tempToken);
       } else if (result.success && result.user) {
+        // Redirect based on user role (use hyphenated routes)
         switch (result.user.role) {
           case 'admin':
             navigate('/admin-dashboard');
@@ -59,7 +63,8 @@ const Login = () => {
         setError(result.message || 'Login failed. Please try again.');
       }
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('Login error:', err); // <-- Existing error log
+      console.log('Error caught in handleSubmit'); // <-- Add this line
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -104,37 +109,36 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 
-                    bg-gradient-to-br from-green-50 via-emerald-100 to-lime-200">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 ">
       <div className="max-w-md w-full">
-        <div className="p-8 bg-white/95 backdrop-blur-lg shadow-2xl rounded-2xl border border-green-200">
+        <div className="card p-8 flex flex-col w-full">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-              <FaSignInAlt className="text-green-700 text-2xl" />
+            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaSignInAlt className="text-primary-600 text-2xl" />
             </div>
-            <h2 className="text-3xl font-bold text-green-900">Welcome Back 👋</h2>
-            <p className="text-green-700 mt-2">Login to access your dashboard</p>
+            <h2 className="text-3xl font-bold text-secondary-900">Welcome Back</h2>
+            <p className="text-secondary-600 mt-2">Sign in to your account</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
               {error}
             </div>
           )}
 
           {/* Login or 2FA Form */}
           {!twofaRequired ? (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-green-900 mb-2">
+                <label htmlFor="username" className="block text-sm font-medium text-secondary-700 mb-2">
                   Email or Username
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-green-500">
-                    <FaUser />
-                  </span>
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaUser className="text-secondary-400" />
+                  </div>
                   <input
                     type="text"
                     id="username"
@@ -142,20 +146,20 @@ const Login = () => {
                     value={formData.username}
                     onChange={handleChange}
                     required
-                    className="w-full pl-10 pr-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:outline-none transition"
+                    className="input-field pl-10"
                     placeholder="Enter your email or username"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-green-900 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-secondary-700 mb-2">
                   Password
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-green-500">
-                    <FaLock />
-                  </span>
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaLock className="text-secondary-400" />
+                  </div>
                   <input
                     type="password"
                     id="password"
@@ -163,7 +167,7 @@ const Login = () => {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full pl-10 pr-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:outline-none transition"
+                    className="input-field pl-10"
                     placeholder="Enter your password"
                   />
                 </div>
@@ -172,7 +176,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 text-lg font-semibold rounded-lg bg-green-700 text-white hover:bg-green-800 active:scale-95 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Signing In...' : 'Sign In'}
               </button>
@@ -180,7 +184,7 @@ const Login = () => {
           ) : (
             <form onSubmit={handleVerify} className="space-y-6">
               <div>
-                <label htmlFor="otp" className="block text-sm font-medium text-green-900 mb-2">
+                <label htmlFor="otp" className="block text-sm font-medium text-secondary-700 mb-2">
                   Enter 2FA Code
                 </label>
                 <input
@@ -190,30 +194,36 @@ const Login = () => {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:outline-none transition"
+                  className="input-field"
                   placeholder="6-digit code"
                   maxLength={6}
                 />
-                <p className="text-xs text-green-700 mt-2">Check your email for the code.</p>
+                <p className="text-sm text-secondary-500 mt-2">Check your email for the code.</p>
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 text-lg font-semibold rounded-lg bg-green-700 text-white hover:bg-green-800 active:scale-95 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Verifying...' : 'Verify Code'}
               </button>
             </form>
           )}
+          <p className="mt-4 text-sm">
+            <Link to="/forgot-password" className="text-primary-600 hover:text-primary-700">
+              Forgot your password?
+            </Link>
+          </p>
 
-          {/* Extra Links */}
-          <div className="flex justify-between items-center mt-6 text-sm">
-            <Link to="/forgot-password" className="text-green-700 hover:text-green-900">
-              Forgot password?
-            </Link>
-            <Link to="/register" className="text-green-700 hover:text-green-900 font-medium">
-              Create account
-            </Link>
+
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-secondary-600">
+              Don't have an account?{' '}
+              <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+                Sign up here
+              </Link>
+            </p>
           </div>
         </div>
       </div>

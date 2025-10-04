@@ -157,7 +157,7 @@ export default function SupplierResponse() {
                   <div className="flex justify-end gap-4 mt-4">
                     <button
                       onClick={() => handleResponse(order._id, 'approved')}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200"
+                      className="bg-primary-green text-white p-2 rounded hover:bg-[#266b2a] flex items-center transition-colors duration-150"
                       data-tooltip-id={`approve-${order._id}`}
                       data-tooltip-content="Approve order"
                     >
@@ -166,7 +166,7 @@ export default function SupplierResponse() {
                     </button>
                     <button
                       onClick={() => handleResponse(order._id, 'denied')}
-                     className="bg-red-500 text-white p-2 rounded hover:bg-red-700 flex items-center transition-colors duration-150 "
+                      className="bg-destructive-red text-white p-2 rounded hover:bg-red-600 flex items-center transition-colors duration-150"
                       data-tooltip-id={`deny-${order._id}`}
                       data-tooltip-content="Deny order"
                     >

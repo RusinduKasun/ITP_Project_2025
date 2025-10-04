@@ -22,29 +22,32 @@ const products = [
 
 export default function Home() {
   return (
-  <div className="min-h-screen flex flex-col text-brown-800 bg-surface">
+    <div className="min-h-screen flex flex-col text-gray-900 bg-gradient-to-b from-green-50 to-emerald-50">
       <Nav />
 
       {/* Hero Section */}
-<header className="relative h-[70vh] flex items-center justify-center bg-cover bg-center" style={{ backgroundImage: "url('/images/Header.png')" }}>
-  {/* Subtle overlay for contrast */}
-  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
+<header
+  className="relative h-[70vh] flex items-center justify-center bg-cover bg-center"
+  style={{ backgroundImage: "url('/images/Header.png')" }}
+>
+  {/* Subtle overlay: transparent at top so image colors show, gentle tint at bottom for text contrast */}
+  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-900/30"></div>
 
-    <div className="relative z-10 text-center px-6">
+  <div className="relative z-10 text-center px-6">
     <h1 className="text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg">
-      Taste of Ceylon
+      Fresh. Local. Delicious.
     </h1>
-    <p className="mt-4 text-lg md:text-xl text-primary-100 max-w-2xl mx-auto">
+    <p className="mt-4 text-lg md:text-xl text-emerald-100 max-w-2xl mx-auto">
       Handpicked fruits, syrups, cordials & more — straight from Sri Lankan farms.
     </p>
 
-  <div className="mt-6 max-w-xl mx-auto flex bg-surface rounded-full overflow-hidden shadow-lg border border-primary-100">
+    <div className="mt-6 max-w-xl mx-auto flex bg-white/90 rounded-full overflow-hidden shadow-lg border border-white/40">
       <input
         type="text"
         placeholder="Search jackfruit, durian, banana..."
         className="flex-1 px-5 py-3 focus:outline-none text-gray-800 bg-transparent"
       />
-      <button className="btn btn-primary px-6 py-3 text-white font-medium transition shadow-sm">
+      <button className="bg-emerald-600 hover:bg-emerald-700 px-6 py-3 text-white font-medium transition shadow-sm">
         Search
       </button>
     </div>
@@ -55,14 +58,18 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 flex-1">
         {/* Categories */}
         <section className="pt-10">
-          <h2 className="text-2xl font-bold mb-6 text-brown-800">Shop by Category</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">Shop by Category</h2>
           <div className="flex gap-6 overflow-x-auto pb-4">
             {categories.map((c, i) => {
               const slug = c.name.toLowerCase().replace(/\s+/g, '-');
               return (
-                <Link key={i} to={`/products?category=${encodeURIComponent(c.name)}#${slug}`} className="min-w-[150px] bg-surface rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-2 transition p-4 flex flex-col items-center gap-3">
+                <Link
+                  key={i}
+                  to={`/products?category=${encodeURIComponent(c.name)}#${slug}`}
+                  className="min-w-[150px] bg-white rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-2 transition p-4 flex flex-col items-center gap-3"
+                >
                   <img src={c.image} alt={c.name} className="w-28 h-28 rounded-xl object-cover border" />
-                  <span className="font-semibold text-brown-700">{c.name}</span>
+                  <span className="font-semibold text-gray-700">{c.name}</span>
                 </Link>
               );
             })}
@@ -72,8 +79,8 @@ export default function Home() {
         {/* Popular Products */}
         <section className="mt-12">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-brown-800">Popular Right Now</h2>
-            <Link to="/products" className="text-sm text-accent-600 hover:underline">See all</Link>
+            <h2 className="text-2xl font-bold text-gray-800">Popular Right Now</h2>
+            <Link to="/products" className="text-sm text-emerald-600 hover:underline">See all</Link>
           </div>
 
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
@@ -86,13 +93,13 @@ export default function Home() {
                   to={`/products?category=${encodeURIComponent(cat)}#${slug}`}
                   className="group"
                 >
-                  <article className="bg-surface rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-2 transition overflow-hidden">
+                  <article className="bg-white rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-2 transition overflow-hidden">
                     <div className="h-40 bg-gray-100">
                       <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
                     </div>
                     <div className="p-4">
-                      <h3 className="text-sm font-medium text-brown-800 truncate">{p.name}</h3>
-                        <p className="mt-1 text-accent-600 font-semibold">{p.price}</p>
+                      <h3 className="text-sm font-medium text-gray-800 truncate">{p.name}</h3>
+                      <p className="mt-1 text-emerald-600 font-semibold">{p.price}</p>
                     </div>
                   </article>
                 </Link>

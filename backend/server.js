@@ -29,7 +29,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 // Allow localhost origins used by dev frontend and local tools
 const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 app.use(cors({
@@ -69,7 +68,7 @@ app.use('/api/addresses', addressRoute);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-// Inventory Routes
+
 // Mount notification routes first so '/api/inventory/notifications' does not collide with inventory/:id
 app.use('/api/inventory/notifications', notificationRoutes);
 app.use('/api/inventory', inventoryRoutes);

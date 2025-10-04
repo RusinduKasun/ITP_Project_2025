@@ -15,7 +15,6 @@ import { Bar, Pie } from 'react-chartjs-2';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-import generateStyledPDF from '../../utils/pdfHelper';
 import Header from "../../components/Finance/layout/Header";
 import Sidebar from "../../components/Finance/layout/Sidebar";
 import Nav from "../Home/Nav/Nav.jsx";
@@ -131,96 +130,12 @@ const Reports = () => {
   };
 
   // Specific export functions for each section
-  // Table-style PDF exports using shared helper (matches inventory exports)
-  const exportOverviewToPDF = () => {
-    if (!financeData) return;
-    const columns = ['Metric', 'Value', 'Details'];
-    const rows = [
-      ['Total Income', financeData.summary.totalIncome, `${financeData.summary.counts?.incomeCount || 0} transactions`],
-      ['Total Expenses', financeData.summary.totalExpenses, `${financeData.summary.counts?.expenseCount || 0} transactions`],
-      ['Total Wastage', financeData.summary.totalWastage, `${financeData.summary.counts?.wastageCount || 0} records`],
-      ['Net Profit/Loss', financeData.summary.profit, financeData.summary.profit >= 0 ? 'Profit' : 'Loss'],
-      ['Profit Margin', `${financeData.summary.profitMargin.toFixed(2)}%`, ''],
-      ['Wastage % of Expenses', `${financeData.summary.wastagePercentage.toFixed(2)}%`, ''],
-      ['Break-even Units', financeData.summary.breakEvenUnits, ''],
-      ['Average Unit Price', financeData.summary.avgUnitPrice, ''],
-      ['Average Unit Cost', financeData.summary.avgUnitCost, '']
-    ];
-    const fileName = `Finance_Reports_Overview_${new Date().toISOString().split('T')[0]}.pdf`;
-    generateStyledPDF({ title: 'Finance Reports & Analytics - Overview', columns, rows, fileName });
-  };
-
-  const exportIncomeToPDF = () => {
-    if (!financeData) return;
-    const columns = ['Date', 'Category', 'Description', 'Quantity', 'Unit Price', 'Total Amount', 'Reference'];
-    const rows = (financeData.tables?.recentIncomes || []).map(income => [
-      new Date(income.incomeDate).toLocaleDateString(),
-      income.category,
-      income.description,
-      income.quantity,
-      income.unitPrice,
-      income.quantity * income.unitPrice,
-      income.referenceNumber || ''
-    ]);
-    const fileName = `Finance_Reports_Income_${new Date().toISOString().split('T')[0]}.pdf`;
-    generateStyledPDF({ title: 'Income Tracking Report', columns, rows, fileName });
-  };
-
-  const exportExpenseToPDF = () => {
-    if (!financeData) return;
-    const columns = ['Date', 'Category', 'Description', 'Amount', 'Finance Manager', 'Payment Method'];
-    const rows = (financeData.tables?.recentExpenses || []).map(expense => [
-      new Date(expense.expenseDate).toLocaleDateString(),
-      expense.category,
-      expense.description,
-      expense.amount,
-      expense.financeManager || '',
-      expense.paymentMethod || ''
-    ]);
-    const fileName = `Finance_Reports_Expense_${new Date().toISOString().split('T')[0]}.pdf`;
-    generateStyledPDF({ title: 'Expense Tracking Report', columns, rows, fileName });
-  };
-
-  const exportWastageToPDF = () => {
-    if (!financeData) return;
-    const columns = ['Category', 'Total Cost (Rs)', 'Records', '% of Total Wastage'];
-    const rows = (financeData.charts?.wastageBreakdown || []).map(item => [
-      item._id,
-      item.totalValue,
-      item.count,
-      ((item.totalValue / financeData.summary.totalWastage) * 100).toFixed(1) + '%'
-    ]);
-    const fileName = `Finance_Reports_Wastage_${new Date().toISOString().split('T')[0]}.pdf`;
-    generateStyledPDF({ title: 'Wastage Cost Estimation Report', columns, rows, fileName });
-  };
-
-  const exportProfitMarginToPDF = () => {
-    if (!financeData) return;
-    const columns = ['Metric', 'Amount (Rs)', 'Percentage', 'Status'];
-    const rows = [
-      ['Current Profit Margin', `${financeData.summary.profitMargin.toFixed(1)}%`, '', ''],
-      ['Net Profit/Loss', financeData.summary.profit, '', financeData.summary.profit >= 0 ? 'Profit' : 'Loss'],
-      ['Total Revenue', financeData.summary.totalIncome, '', ''],
-      ['Total Expenses', financeData.summary.totalExpenses, `${((financeData.summary.totalExpenses / Math.max(1, financeData.summary.totalIncome)) * 100).toFixed(1)}%`, '']
-    ];
-    const fileName = `Finance_Reports_ProfitMargin_${new Date().toISOString().split('T')[0]}.pdf`;
-    generateStyledPDF({ title: 'Profit Margin Analysis Report', columns, rows, fileName });
-  };
-
-  const exportBreakEvenToPDF = () => {
-    if (!financeData) return;
-    const columns = ['Component', 'Amount (Rs)', 'Calculation', 'Impact'];
-    const totalUnitsSold = financeData.tables?.recentIncomes?.reduce((sum, income) => sum + (income.quantity || 0), 0) || 0;
-    const rows = [
-      ['Total Revenue', financeData.summary.totalIncome, 'Sum of all sales', 'Positive'],
-      ['Total Expenses', financeData.summary.totalExpenses, 'Operating costs', 'Negative'],
-      ['Wastage Cost', financeData.summary.totalWastage, 'Lost inventory value', 'Negative'],
-      ['Total Units Sold', totalUnitsSold, 'Sum of quantities', 'Volume'],
-      ['Break-even Point', `${financeData.summary.breakEvenUnits} units`, 'Fixed costs ÷ (Price - Variable cost)', 'Target']
-    ];
-    const fileName = `Finance_Reports_BreakEven_${new Date().toISOString().split('T')[0]}.pdf`;
-    generateStyledPDF({ title: 'Break-even Analysis Report', columns, rows, fileName });
-  };
+  const exportOverviewToPDF = () => exportSectionToPDF(overviewRef, 'overview', 'Finance Reports & Analytics - Overview');
+  const exportIncomeToPDF = () => exportSectionToPDF(incomeRef, 'income', 'Income Tracking Report');
+  const exportExpenseToPDF = () => exportSectionToPDF(expenseRef, 'expense', 'Expense Tracking Report');
+  const exportWastageToPDF = () => exportSectionToPDF(wastageRef, 'wastage', 'Wastage Cost Estimation Report');
+  const exportProfitMarginToPDF = () => exportSectionToPDF(profitMarginRef, 'profitMargin', 'Profit Margin Analysis Report');
+  const exportBreakEvenToPDF = () => exportSectionToPDF(breakEvenRef, 'breakEven', 'Break-even Analysis Report');
 
   // Excel Export Functions
   const exportOverviewToExcel = () => {

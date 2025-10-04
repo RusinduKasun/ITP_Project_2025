@@ -23,12 +23,12 @@ import SupplierResponse from './pages/Supplier/SupplierResponse';
 import OrderDetails from './pages/Supplier/OrderDetails';
 import AdminDashbord from './pages/Admin/AdminDashbord';
 // Finance Pages
-import ReportsFinance from "./pages/Finance/Reports.jsx";
-import Expenses from "./pages/Finance/Expenses.jsx";
-import Income from "./pages/Finance/Income.jsx";
-import Wastage from "./pages/Finance/Wastage.jsx";
-import BreakEven from "./pages/Finance/BreakEven.jsx";
-import ProfitMargin from "./pages/Finance/ProfitMargin.jsx";
+import ReportsFinance from "./pages/finance/Reports.jsx";
+import Expenses from "./pages/finance/Expenses.jsx";
+import Income from "./pages/finance/Income.jsx";
+import Wastage from "./pages/finance/Wastage.jsx";
+import BreakEven from "./pages/finance/BreakEven.jsx";
+import ProfitMargin from "./pages/finance/ProfitMargin.jsx";
 import FinanceDashboard from "./pages/Finance/FinanceDash.jsx";
 //Admin Pages
 import { AuthProvider } from './Context/AuthContext.jsx';
@@ -60,8 +60,6 @@ export default function App() {
           <Route path="/products" element={<Products />} />
           {/* Admin Route */}
           <Route path="/adminDashbord" element={<AdminDashbord />} />
-          {/* Authentication routes */}
-          <Route path="/login" element={<Login />} />
           {/* Supplier Route */}
           <Route path="/suppliersDash" element={<Dashboard />} />
           {/* Legacy/hyphenated aliases used in Nav/links */}
@@ -123,4 +121,3 @@ export default function App() {
     </div>
   )
 }
-//4/0AVGzR1DzsChaUYFygTvK6hOmWkRqkLT7iXO8JDMpI3WsYMp47LwOhc3v9OGP3OGHhUVmJgi

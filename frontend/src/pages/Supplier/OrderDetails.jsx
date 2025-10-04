@@ -5,11 +5,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTruck, faCheckCircle, faSpinner, faBox, faSearch, faFilePdf, faDownload, faRefresh, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
 import { Tooltip } from 'react-tooltip';
-import generateStyledPDF from '../../utils/pdfHelper';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import Header from '../../components/Supplier/Header';
 import Nav from '../../components/Supplier/Nav';
 import Footer from '../../components/Supplier/Footer';
-import Nav1 from '../../pages/Home/Nav/Nav';
+
 // ErrorBoundary ක්ලාස් එක - දෝෂයක් ඇතිවුවහොත් පෙන්වන්න
 class ErrorBoundary extends React.Component {
   state = { hasError: false };
@@ -63,15 +64,15 @@ export default function OrderDetails() {
     // Search query එකට අනුව filter කරන්න
     if (searchQuery) {
       filtered = filtered.filter(order =>
-        (order.fruit || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (order.orderId || '').toLowerCase().includes(searchQuery.toLowerCase())
+        order.fruit.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.orderId.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     // Status එකට අනුව filter කරන්න
     if (filterStatus !== 'all') {
       filtered = filtered.filter(order => order.trackingStatus === filterStatus);
     }
-    // Sort
+    // Sort කිරීම
     filtered.sort((a, b) => {
       let aVal, bVal;
       if (sortBy === 'date') {
@@ -81,16 +82,152 @@ export default function OrderDetails() {
         aVal = a.totalPrice;
         bVal = b.totalPrice;
       } else if (sortBy === 'supplier') {
-        aVal = a.supplier?.name || '';
-        bVal = b.supplier?.name || '';
+        aVal = a.supplier.name;
+        bVal = b.supplier.name;
       }
       return sortOrder === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
     });
     setFilteredOrders(filtered);
   }, [orders, searchQuery, filterStatus, sortBy, sortOrder]);
 
-  // PDF generate using shared helper (component scope)
+  // Orders fetch කිරීම (API එකෙන්)
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      const res = await fetchOrders();
+      setOrders(Array.isArray(res.data) ? res.data : []);
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch orders');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Tracking status update කිරීම (API call)
+  const updateTracking = async (orderId, newStatus) => {
+    try {
+      setTracking(prev => ({ ...prev, [orderId]: newStatus }));
+      await updateOrder(orderId, { trackingStatus: newStatus });
+      await loadOrders();
+    } catch (err) {
+      console.error('Tracking update failed:', err);
+      setError('Failed to update tracking status');
+    }
+  };
+
+  // Order එකේ tracking status එක ලබාගන්න
+  const getTrackingStatus = (orderId) => {
+    return tracking[orderId] || orders.find(o => o._id === orderId)?.trackingStatus || 'Order Placed';
+  };
+
+  // Tracking timeline එකක් ලබාදෙයි (status එක අනුව)
+  const getTrackingTimeline = (orderId) => {
+    const currentStatus = getTrackingStatus(orderId);
+    return trackingStatuses.map((step, index) => ({
+      step,
+      completed: trackingStatuses.indexOf(currentStatus) >= index,
+    }));
+  };
+
+  // Modal එක විවෘත කිරීම
+  const openModal = (order) => {
+    setSelectedOrder(order);
+    setModalIsOpen(true);
+  };
+
+  // Modal එක වසාදැමීම
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setSelectedOrder(null);
+  };
+
+  // Order එක expand/collapse කිරීම
+  const toggleOrder = (orderId) => {
+    setExpandedOrders(prev => ({
+      ...prev,
+      [orderId]: !prev[orderId],
+    }));
+  };
+
+  // CSV එකක් export කිරීම
+  const exportToCSV = () => {
+    const headers = ['Order ID', 'Fruit', 'Quantity', 'Supplier', 'Delivery Date', 'Total Price', 'Status', 'Tracking Status'];
+    const csv = [
+      headers.join(','),
+      ...filteredOrders.map(order => [
+        order.orderId,
+        order.fruit,
+        order.quantity,
+        order.supplier?.name || 'N/A',
+        new Date(order.deliveryDate).toLocaleDateString(),
+        order.totalPrice.toFixed(2),
+        order.status,
+        getTrackingStatus(order._id),
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'orders.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  // PDF එකක් generate කිරීම (jsPDF සහ autoTable භාවිතා කරයි)
   const generatePDF = () => {
+    const doc = new jsPDF();
+
+    // වර්ණ set කිරීම
+    const primaryGreen = [34, 107, 42];
+    const lightGreen = [76, 175, 80];
+    const darkGray = [64, 64, 64];
+    const lightGray = [245, 245, 245];
+    const white = [255, 255, 255];
+
+    // Header එක, ලාංඡනය සහ මාතෘකාව
+    doc.setFillColor(...primaryGreen);
+    doc.rect(0, 0, 210, 35, 'F'); // Header background
+
+    // සමාගමේ නම/ලාංඡනය
+    doc.setTextColor(...white);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FruitFlow', 20, 20);
+
+    // උප මාතෘකාව
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Order Management System', 20, 28);
+
+    // Report මාතෘකාව
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Order Details Report', 105, 50, { align: 'center' });
+
+    // දිනය සහ සාරාංශ තොරතුරු
+    doc.setTextColor(...darkGray);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const currentDate = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    doc.text(`Generated on: ${currentDate} at ${currentTime}`, 20, 60);
+    doc.text(`Total Orders: ${filteredOrders.length}`, 20, 68);
+
+    // සාරාංශය සඳහා මුළු වටිනාකම හා ප්‍රමාණය ගණනය කිරීම
+    const totalValue = filteredOrders.reduce((sum, order) => sum + order.totalPrice, 0);
+    const totalQuantity = filteredOrders.reduce((sum, order) => sum + order.quantity, 0);
+
+    doc.text(`Total Value: Rs. ${totalValue.toFixed(2)}`, 105, 60);
+    doc.text(`Total Quantity: ${totalQuantity}`, 105, 68);
+
+    // රූපලාවණ්‍ය රේඛාවක් ඇඳීම
+    doc.setDrawColor(...lightGreen);
+    doc.setLineWidth(1);
+    doc.line(20, 75, 190, 75);
+
+    // Table එකේ තීරු
     const tableColumn = [
       'Order ID',
       'Fruit',
@@ -102,6 +239,7 @@ export default function OrderDetails() {
       'Tracking'
     ];
 
+    // Table එකේ පේළි
     const tableRows = filteredOrders.map(order => [
       order.orderId,
       order.fruit,
@@ -113,143 +251,129 @@ export default function OrderDetails() {
       getTrackingStatus(order._id),
     ]);
 
-    const totalValue = filteredOrders.reduce((sum, order) => sum + order.totalPrice, 0);
-    const totalQuantity = filteredOrders.reduce((sum, order) => sum + order.quantity, 0);
+    // Table එක autoTable එකෙන් ඇඳීම
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 85,
+      theme: 'grid',
+      headStyles: {
+        fillColor: primaryGreen,
+        textColor: white,
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'center',
+        cellPadding: { top: 6, right: 4, bottom: 6, left: 4 }
+      },
+      bodyStyles: {
+        fontSize: 8,
+        cellPadding: { top: 4, right: 4, bottom: 4, left: 4 },
+        valign: 'middle'
+      },
+      alternateRowStyles: {
+        fillColor: lightGray
+      },
+      columnStyles: {
+        0: { halign: 'center', fontStyle: 'bold' }, // Order ID
+        1: { halign: 'left' }, // Fruit
+        2: { halign: 'center' }, // Quantity
+        3: { halign: 'left' }, // Supplier
+        4: { halign: 'center' }, // Delivery Date
+        5: { halign: 'right', fontStyle: 'bold' }, // Price
+        6: { halign: 'center' }, // Status
+        7: { halign: 'center' } // Tracking
+      },
+      styles: {
+        lineColor: primaryGreen,
+        lineWidth: 0.1,
+      },
+      margin: { left: 20, right: 20 },
+      didDrawPage: function (data) {
+        // පිටු අංකය සහ footer එක
+        const pageCount = doc.internal.getNumberOfPages();
+        const pageSize = doc.internal.pageSize;
+        const pageHeight = pageSize.height;
 
-    generateStyledPDF({
-      title: 'Order Details Report',
-      columns: tableColumn,
-      rows: tableRows,
-      fileName: `order-details-report-${new Date().toISOString().slice(0,19).replace(/[:.]/g,'-')}.pdf`,
-      summary: [
-        `Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
-        `Total Orders: ${filteredOrders.length}`,
-        `Total Quantity: ${totalQuantity}`,
-        `Total Value: Rs. ${totalValue.toFixed(2)}`,
-      ],
-      autoTableOptions: {
-        columnStyles: {
-          0: { halign: 'center', fontStyle: 'bold' },
-          1: { halign: 'left' },
-          2: { halign: 'center' },
-          3: { halign: 'left' },
-          4: { halign: 'center' },
-          5: { halign: 'right' },
-          6: { halign: 'center' },
-          7: { halign: 'center' }
-        }
+        // Footer
+        doc.setFontSize(8);
+        doc.setTextColor(...darkGray);
+        doc.text(
+          `Page ${data.pageNumber} of ${pageCount}`,
+          pageSize.width / 2,
+          pageHeight - 10,
+          { align: 'center' }
+        );
+
+        // Footer line
+        doc.setDrawColor(...lightGreen);
+        doc.setLineWidth(0.5);
+        doc.line(20, pageHeight - 15, pageSize.width - 20, pageHeight - 15);
       }
     });
-  };
 
-  // Load orders from API
-  const loadOrders = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetchOrders();
-      if (res && Array.isArray(res.data)) {
-        setOrders(res.data);
-      } else if (Array.isArray(res)) {
-        // support APIs that return array directly
-        setOrders(res);
-      } else {
-        setError('Failed to load orders');
-      }
-    } catch (err) {
-      console.error('Error loading orders', err);
-      setError(err.response?.data?.message || err.message || 'Failed to load orders');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Table එකෙන් පසුව සාරාංශය
+    const finalY = doc.lastAutoTable.finalY + 15;
 
-  // Export filteredOrders to CSV (simple client-side CSV)
-  const exportToCSV = () => {
-    try {
-      const rows = [
-        ['Order ID', 'Fruit', 'Quantity', 'Supplier', 'Delivery Date', 'Price', 'Status', 'Tracking']
-      ];
-      filteredOrders.forEach(o => {
-        rows.push([
-          o.orderId,
-          o.fruit,
-          o.quantity,
-          o.supplier?.name || 'N/A',
-          new Date(o.deliveryDate).toLocaleDateString(),
-          o.totalPrice.toFixed(2),
-          o.status,
-          getTrackingStatus(o._id)
-        ]);
-      });
-      const csvContent = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `orders-${new Date().toISOString().slice(0,10)}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Export CSV error', err);
-      setError('Failed to export CSV');
-    }
-  };
+    // සාරාංශ box එක
+    doc.setFillColor(...lightGray);
+    doc.roundedRect(20, finalY, 170, 35, 3, 3, 'F');
 
-  // Modal handlers
-  const openModal = (order) => {
-    setSelectedOrder(order);
-    setModalIsOpen(true);
-  };
+    // සාරාංශ මාතෘකාව
+    doc.setTextColor(...primaryGreen);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Order Summary', 25, finalY + 10);
 
-  const closeModal = () => {
-    setModalIsOpen(false);
-    setSelectedOrder(null);
-  };
+    // සාරාංශ විස්තර
+    doc.setTextColor(...darkGray);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
 
-  // Toggle expand/collapse
-  const toggleOrder = (orderId) => {
-    setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
-  };
+    const summaryData = [
+      `Total Orders: ${filteredOrders.length}`,
+      `Total Quantity: ${totalQuantity} units`,
+      `Total Value: Rs. ${totalValue.toFixed(2)}`,
+      `Average Order Value: Rs. ${(totalValue / filteredOrders.length || 0).toFixed(2)}`
+    ];
 
-  // Tracking helpers
-  const getTrackingStatus = (orderId) => {
-    if (tracking && tracking[orderId]) return tracking[orderId];
-    const o = orders.find(x => x._id === orderId);
-    return o?.trackingStatus || o?.status || 'Order Placed';
-  };
+    summaryData.forEach((item, index) => {
+      doc.text(item, 25 + (index % 2) * 85, finalY + 20 + Math.floor(index / 2) * 8);
+    });
 
-  const getTrackingTimeline = (orderId) => {
-    const current = getTrackingStatus(orderId);
-    const idx = trackingStatuses.indexOf(current);
-    return trackingStatuses.map((step, i) => ({ step, completed: i <= idx }));
-  };
+    // Status breakdown එක
+    const statusCounts = {};
+    filteredOrders.forEach(order => {
+      const status = getTrackingStatus(order._id);
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+    });
 
-  const updateTracking = async (orderId, newStatus) => {
-    try {
-      // optimistic update
-      setTracking(prev => ({ ...prev, [orderId]: newStatus }));
-      // call API to persist
-      await updateOrder(orderId, { trackingStatus: newStatus });
-      // also update orders list locally
-      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, trackingStatus: newStatus } : o));
-    } catch (err) {
-      console.error('Failed to update tracking', err);
-      setError(err.response?.data?.message || 'Failed to update status');
-      // revert optimistic update on failure
-      setTracking(prev => {
-        const copy = { ...prev };
-        delete copy[orderId];
-        return copy;
+    // Status distribution එක ඇතුළත් කිරීම
+    if (finalY + 55 < doc.internal.pageSize.height - 30) {
+      doc.setTextColor(...primaryGreen);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Status Distribution:', 25, finalY + 50);
+
+      doc.setTextColor(...darkGray);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+
+      let yPos = finalY + 60;
+      Object.entries(statusCounts).forEach(([status, count]) => {
+        const percentage = ((count / filteredOrders.length) * 100).toFixed(1);
+        doc.text(`${status}: ${count} orders (${percentage}%)`, 25, yPos);
+        yPos += 6;
       });
     }
+
+    // Timestamp එකක් සහිතව PDF එක save කිරීම
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
+    doc.save(`order-details-report-${timestamp}.pdf`);
   };
 
   return (
     <>
-      <Nav1 />
+      
       <Nav />
       <div className="min-h-screen bg-white">
         <div className="container mx-auto px-6 py-8 max-w-7xl">
@@ -328,7 +452,7 @@ export default function OrderDetails() {
                   <div className="flex gap-4 w-full lg:w-auto justify-end">
                     <button
                       onClick={generatePDF}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200"
+                      className="bg-primary-green text-white px-4 py-2 rounded hover:bg-[#266b2a] flex items-center"
                       data-tooltip-id="pdf-tooltip"
                       data-tooltip-content="Download PDF"
                     >
@@ -338,7 +462,7 @@ export default function OrderDetails() {
                     <Tooltip id="pdf-tooltip" />
                     <button
                       onClick={exportToCSV}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200"
+                      className="bg-primary-green text-white px-4 py-2 rounded hover:bg-[#266b2a]-600 flex items-center"
                       data-tooltip-id="csv-tooltip"
                       data-tooltip-content="Download CSV"
                     >
@@ -348,7 +472,7 @@ export default function OrderDetails() {
                     <Tooltip id="csv-tooltip" />
                     <button
                       onClick={loadOrders}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200"
+                      className="bg-gray-300 text-text-primary px-4 py-2 rounded hover:bg-gray-400 flex items-center"
                       data-tooltip-id="refresh-tooltip"
                       data-tooltip-content="Refresh orders"
                     >
@@ -383,8 +507,7 @@ export default function OrderDetails() {
                         {/* Expand/collapse බොත්තම */}
                         <button
                           onClick={() => toggleOrder(order._id)}
-                          className="bg-gray-200 text-primary-green hover:text-green-900 hover:bg-green-500 px-3 py-2 rounded-sm"
-
+                          className="text-primary-green hover:text-white px-3 py-2 rounded-sm"
                           data-tooltip-id={`toggle-${order._id}`}
                           data-tooltip-content={expandedOrders[order._id] ? 'Collapse order' : 'Expand order'}
                         >
