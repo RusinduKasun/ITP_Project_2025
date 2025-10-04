@@ -3,7 +3,7 @@ import { fetchOrders, updateOrder } from '../../Apis/SupplierApi'
 import Header from '../../components/Supplier/Header'
 import Nav from '../../components/Supplier/Nav'
 import Footer from '../../components/Supplier/Footer'
-
+import Nav1 from '../../pages/Home/Nav/Nav';
 export default function Orders() {
   const [orders, setOrders] = useState([])
 
@@ -27,7 +27,7 @@ export default function Orders() {
 
   return (
     <>
-      
+      <Nav1/>
       <Nav />
       <div>
         <h1 className="text-3xl font-bold mb-6 text-purple-700">Purchase Orders & Tracking</h1>

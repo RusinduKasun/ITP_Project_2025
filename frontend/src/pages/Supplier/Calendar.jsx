@@ -14,7 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Header from '../../components/Supplier/Header';
 import Nav from '../../components/Supplier/Nav';
 import Footer from '../../components/Supplier/Footer';
-
+import Nav1 from '../../pages/Home/Nav/Nav';
 // Modal එකේ root element එක set කරනවා
 Modal.setAppElement('#root');
 
@@ -550,7 +550,7 @@ export default function Calendar() {
   // Main UI එක render කරනවා
   return (
     <>
-    
+    <Nav1/>
       <Nav />
       <div className="min-h-screen bg-white">
         {/* Toast notifications */}
@@ -582,7 +582,7 @@ export default function Calendar() {
           <div className="mb-6 flex gap-4">
             <button
               onClick={() => openModal()}
-              className="bg-primary-green text-white px-6 py-3 rounded-lg hover:bg-[#266b2a] inline-flex items-center"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200"
               data-tooltip-id="add-order-tooltip"
               data-tooltip-content="Add a new order"
             >
@@ -591,7 +591,7 @@ export default function Calendar() {
             </button>
             <button
               onClick={refreshData}
-              className="bg-primary-green text-white px-6 py-3 rounded-lg hover:bg-[#266b2a] inline-flex items-center"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200"
               data-tooltip-id="refresh-tooltip"
               data-tooltip-content="Refresh calendar"
             >
@@ -733,7 +733,7 @@ export default function Calendar() {
                 <button
                   type="button"
                   onClick={findBestSupplier}
-                  className={`relative px-4 py-3 rounded-lg inline-flex items-center transition-all duration-200 transform hover:-translate-y-0.5 ${searching ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-green text-white hover:bg-[#266b2a]'}`}
+                  className={`relative px-4 py-3 rounded-lg inline-flex items-center transition-all duration-200 transform hover:-translate-y-0.5 ${searching ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#257225] text-white hover:bg-[#266b2a] px-4 py-2 rounded'}`}
                   disabled={!form.fruit || form.quantity <= 0 || searching}
                   data-tooltip-id="best-fit-tooltip"
                   data-tooltip-content={searching ? searchMessage : 'Find the cheapest supplier for this fruit'}
@@ -782,13 +782,13 @@ export default function Calendar() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 bg-gray-200 text-text-primary rounded-lg hover:bg-gray-300 transition-all duration-200 transform hover:-translate-y-0.5"
+                   className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-500 flex items-center transition-colors duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-[#266b2a] transition-all duration-200 transform hover:-translate-y-0.5"
+                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200"
                 >
                   {isEditing ? 'Update' : 'Submit'}
                 </button>
