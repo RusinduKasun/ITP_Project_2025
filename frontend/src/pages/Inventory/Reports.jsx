@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Search, Download, FileText, Eye, Package, AlertTriangle, BarChart3, TrendingUp } from "lucide-react";
 import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import generateStyledPDF from '../../utils/pdfHelper';
 import Header from "../../components/Inventory/Header";
 import Sidebar from "../../components/Inventory/Sidebar";
 
@@ -182,69 +181,16 @@ const Reports = () => {
   const downloadPDF = () => {
     const exportData = prepareDataForExport(currentReportData);
     if (!exportData.length) return alert("No data to export");
-
     const reportName = reportTypes.find(r => r.id === activeReport)?.name || "Report";
-    const currentDate = new Date().toLocaleDateString();
     const headers = Object.keys(exportData[0]);
-
-    const htmlContent = `
-    <html>
-      <head>
-        <title>${reportName}</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #28a745; padding-bottom: 15px; }
-          .header h1 { color: #28a745; margin: 0; font-size: 24px; }
-          .header p { margin: 5px 0 0 0; color: #666; font-size: 12px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
-          th { background-color: #28a745; color: white; padding: 8px; text-align: left; font-weight: bold; border: 1px solid #ddd; }
-          td { padding: 8px; border: 1px solid #ddd; text-align: left; }
-          tr:nth-child(even) { background-color: #f8f9fa; }
-          tr:hover { background-color: #e8f5e8; }
-          .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>${reportName}</h1>
-          <p>Generated on: ${currentDate} | Total Records: ${exportData.length}</p>
-        </div>
-        <table>
-          <thead>
-            <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
-          </thead>
-          <tbody>
-            ${exportData.map(row => `<tr>${headers.map(h => `<td>${row[h]}</td>`).join('')}</tr>`).join('')}
-          </tbody>
-        </table>
-        <div class="footer">
-          <p>Report generated automatically by Farm Management System</p>
-        </div>
-      </body>
-    </html>
-  `;
-
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-      printWindow.onload = () => {
-        setTimeout(() => {
-          printWindow.print();
-          // printWindow.close(); // optional
-        }, 500);
-      };
-    } else {
-      // fallback: download HTML file
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${activeReport}_${new Date().toISOString().split("T")[0]}.html`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      alert('PDF generation opened in new window. If blocked, an HTML file was downloaded instead. You can print the HTML file as PDF.');
-    }
+    const rows = exportData.map(row => headers.map(h => row[h]));
+    generateStyledPDF({
+      title: reportName,
+      columns: headers,
+      rows,
+      fileName: `${activeReport}_${new Date().toISOString().split("T")[0]}.pdf`,
+      summary: [`Generated on: ${new Date().toLocaleDateString()}`, `Total Records: ${exportData.length}`],
+    });
   };
 
 

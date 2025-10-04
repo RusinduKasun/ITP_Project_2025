@@ -4,12 +4,12 @@ import { fetchOrders, fetchSuppliers } from '../../Apis/SupplierApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilePdf, faSpinner, faChevronDown, faChevronUp, faChartPie } from '@fortawesome/free-solid-svg-icons';
 import { Tooltip } from 'react-tooltip';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import generateStyledPDF from '../../utils/pdfHelper';
 import { format, parseISO, startOfMonth, differenceInDays, differenceInHours } from 'date-fns';
 import Header from '../../components/Supplier/Header';
 import Nav from '../../components/Supplier/Nav';
 import Footer from '../../components/Supplier/Footer';
+import Nav1 from '../../pages/Home/Nav/Nav';
 
 // Error Boundary Component
 // මෙය දෝෂයක් ඇතිවූ විට පෙන්වන්නෙයි. 
@@ -71,132 +71,19 @@ export default function Report() {
     setExpandedReports(prev => ({ ...prev, [reportKey]: !prev[reportKey] }));
   };
 
-  // PDF එක attractive ලෙස නිර්මාණය කරන function එක
-  const generatePDF = (title, columns, data, customStyles = {}) => {
-    const doc = new jsPDF();
-
-    // වර්ණ සකසයි
-    const primaryGreen = [34, 107, 42]; // #266b2a
-    const lightGreen = [76, 175, 80]; // #4CAF50
-    const darkGray = [66, 66, 66]; // #424242
-    const lightGray = [245, 245, 245]; // #F5F5F5
-
-    // Header එකට පාටක් දමයි
-    doc.setFillColor(primaryGreen[0], primaryGreen[1], primaryGreen[2]);
-    doc.rect(0, 0, 210, 30, 'F');
-
-    // Logo එකක් ලෙස SFL කියලා දමයි
-    doc.setFillColor(255, 255, 255);
-    doc.circle(25, 15, 8, 'F');
-    doc.setFontSize(12);
-    doc.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2]);
-    doc.text('SFL', 20, 18);
-
-    // Title එක set කරයි
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(255, 255, 255);
-    doc.text(title, 45, 18);
-
-    // Subtitle එකට දිනය දමයි
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+  // Use centralized PDF helper
+  const generatePDF = (title, columns, data, options = {}) => {
+    const rows = data.map(r => Array.isArray(r) ? r : Object.values(r));
+    const summary = options.summary || [];
+    const autoTableOptions = options.autoTableOptions || {};
+    generateStyledPDF({
+      title,
+      columns,
+      rows,
+      fileName: `${title.replace(/\s+/g, '_').toLowerCase()}.pdf`,
+      summary,
+      autoTableOptions,
     });
-    doc.text(`Generated on ${currentDate}`, 45, 25);
-
-    // Decorative line එකක් දමයි
-    doc.setDrawColor(lightGreen[0], lightGreen[1], lightGreen[2]);
-    doc.setLineWidth(2);
-    doc.line(14, 35, 196, 35);
-
-    // Table එක attractive ලෙස set කරයි
-    autoTable(doc, {
-      head: [columns],
-      body: data,
-      startY: 45,
-      theme: 'grid',
-      headStyles: {
-        fillColor: primaryGreen,
-        textColor: [255, 255, 255],
-        fontSize: 11,
-        fontStyle: 'bold',
-        halign: 'center',
-        cellPadding: { top: 8, right: 6, bottom: 8, left: 6 }
-      },
-      bodyStyles: {
-        fontSize: 10,
-        cellPadding: { top: 6, right: 6, bottom: 6, left: 6 },
-        textColor: darkGray
-      },
-      alternateRowStyles: {
-        fillColor: lightGray
-      },
-      columnStyles: {
-        0: { halign: 'left' },
-        1: { halign: 'center' },
-        2: { halign: 'right' },
-        3: { halign: 'center' },
-        4: { halign: 'center' },
-        5: { halign: 'center' },
-        6: { halign: 'right' }
-      },
-      styles: {
-        lineColor: [200, 200, 200],
-        lineWidth: 0.5,
-        ...customStyles
-      },
-      margin: { top: 45, right: 14, bottom: 20, left: 14 },
-      didDrawPage: (data) => {
-        // Footer එකක් දමයි
-        const pageCount = data.doc.internal.getNumberOfPages();
-        const pageNumber = data.doc.internal.getCurrentPageInfo().pageNumber;
-
-        // Footer background
-        doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-        doc.rect(0, 280, 210, 17, 'F');
-
-        // Footer text
-        doc.setFontSize(8);
-        doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-        doc.text('Fruit Supply Chain Management System', 14, 290);
-        doc.text(`Page ${pageNumber} of ${pageCount}`, 196 - doc.getTextWidth(`Page ${pageNumber} of ${pageCount}`), 290);
-
-        // Footer line එකක් දමයි
-        doc.setDrawColor(lightGreen[0], lightGreen[1], lightGreen[2]);
-        doc.setLineWidth(1);
-        doc.line(14, 285, 196, 285);
-      }
-    });
-
-    // Data තියෙනවා නම් summary box එකක් දමයි
-    if (data.length > 0) {
-      const finalY = doc.lastAutoTable.finalY || 45;
-
-      // Summary box background
-      doc.setFillColor(lightGreen[0], lightGreen[1], lightGreen[2]);
-      doc.roundedRect(14, finalY + 15, 182, 25, 3, 3, 'F');
-
-      // Summary text
-      doc.setFontSize(10);
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`Total Records: ${data.length}`, 20, finalY + 28);
-      doc.text(`Report Type: ${title}`, 20, finalY + 35);
-
-      // Icon එකක් දමයි
-      doc.setFillColor(255, 255, 255);
-      doc.circle(185, finalY + 27, 6, 'F');
-      doc.setTextColor(lightGreen[0], lightGreen[1], lightGreen[2]);
-      doc.setFontSize(12);
-      doc.text('✓', 182, finalY + 30);
-    }
-
-    // PDF එක save කරයි
-    doc.save(`${title.replace(/\s+/g, '_').toLowerCase()}.pdf`);
   };
 
   // Report 1: මාසික/කාර්තුවේ Order Summary එක
@@ -626,7 +513,7 @@ export default function Report() {
   // Reports UI එක render කරයි
   return (
     <>
-     
+     <Nav1/>
       <Nav />
       <ErrorBoundary>
         <div className="min-h-screen bg-gray-100">
@@ -710,7 +597,7 @@ export default function Report() {
                       {/* expand/collapse button එක */}
                       <button
                         onClick={() => toggleReport(report.key)}
-                        className="text-primary-green hover:text-white px-3 py-2 rounded-sm"
+                        className="text-primary-green hover:text-blue-500 px-3 py-2 rounded-sm"
                         data-tooltip-id={`toggle-${report.key}`}
                         data-tooltip-content={expandedReports[report.key] ? 'Collapse' : 'Expand'}
                       >
@@ -720,7 +607,7 @@ export default function Report() {
                       {/* PDF download button එක */}
                       <button
                         onClick={report.download}
-                        className="bg-primary-green text-white px-4 py-2 rounded hover:bg-[#266b2a] flex items-center transition-colors duration-200"
+                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-900 flex items-center transition-colors duration-200"
                         data-tooltip-id={`pdf-${report.key}`}
                         data-tooltip-content="Download Professional PDF"
                       >

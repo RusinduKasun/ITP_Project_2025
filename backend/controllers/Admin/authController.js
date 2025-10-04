@@ -60,7 +60,6 @@ const generateTempToken = (userId) => {
 };
 
 // Login User
-
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -275,6 +274,98 @@ export const verifyTwoFactor = async (req, res) => {
   } catch (error) {
     console.error('Verify 2FA error:', error);
     res.status(500).json({ message: 'Error verifying 2FA', error: error.message });
+  }
+};
+
+// Social login / register (Google, Facebook)
+export const socialLogin = async (req, res) => {
+  try {
+    const { provider } = req.body;
+    let profile = null;
+
+    if (!provider) return res.status(400).json({ message: 'Provider is required' });
+
+    if (provider === 'google') {
+      const { idToken } = req.body;
+      if (!idToken) return res.status(400).json({ message: 'idToken is required for Google' });
+
+      // Verify Google ID token via Google tokeninfo endpoint
+      const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => '<no-body>');
+        console.error('Google token verification failed', { status: resp.status, body: text });
+        return res.status(401).json({ message: 'Invalid Google token', status: resp.status, details: text });
+      }
+      const info = await resp.json();
+      // tokeninfo returns email and email_verified
+      if (!info.email || info.email_verified !== 'true' && info.email_verified !== true) {
+        return res.status(400).json({ message: 'Google account email not verified' });
+      }
+      profile = {
+        email: info.email,
+        firstName: info.given_name || (info.name || '').split(' ')[0] || '',
+        lastName: info.family_name || (info.name || '').split(' ').slice(1).join(' ') || '',
+        picture: info.picture || ''
+      };
+
+    } else if (provider === 'facebook') {
+      const { accessToken } = req.body;
+      if (!accessToken) return res.status(400).json({ message: 'accessToken is required for Facebook' });
+
+      const resp = await fetch(`https://graph.facebook.com/me?fields=id,name,email&access_token=${encodeURIComponent(accessToken)}`);
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => '<no-body>');
+        console.error('Facebook token verification failed', { status: resp.status, body: text });
+        return res.status(401).json({ message: 'Invalid Facebook token', status: resp.status, details: text });
+      }
+      const info = await resp.json();
+      if (!info.email) return res.status(400).json({ message: 'Facebook account email is required' });
+      const nameParts = (info.name || '').split(' ');
+      profile = {
+        email: info.email,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        picture: ''
+      };
+
+    } else {
+      return res.status(400).json({ message: 'Unsupported provider' });
+    }
+
+    // Find or create user
+    let user = await User.findOne({ email: profile.email });
+    if (!user) {
+      // generate a username from email local part
+      const local = profile.email.split('@')[0].replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 20);
+      let username = local || `user${Date.now()}`;
+      // ensure uniqueness
+      let suffix = 0;
+      while (await User.findOne({ username })) {
+        suffix += 1;
+        username = `${local}${suffix}`;
+      }
+
+      // create random password (user can reset later)
+      const randomPassword = Math.random().toString(36).slice(-12) + Date.now().toString(36).slice(-4);
+
+      user = new User({
+        username,
+        firstName: profile.firstName || ' ',
+        lastName: profile.lastName || ' ',
+        email: profile.email,
+        password: randomPassword,
+        profilePicture: profile.picture || ''
+      });
+      await user.save();
+    }
+
+    // generate token
+    const token = generateToken(user._id);
+    res.json({ message: 'Social login successful', user: user.getProfile(), token });
+
+  } catch (error) {
+    console.error('Social login error:', error);
+    res.status(500).json({ message: 'Error during social login', error: error.message });
   }
 };
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchOrders, fetchSuppliers } from '../../Apis/SupplierApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Nav1 from '../../pages/Home/Nav/Nav';
 import { faBox, faTruck, faCheckCircle, faDollarSign, faChartPie, faGauge, faChartLine, faSpinner, faSearch, faBell, faExclamationTriangle, faTimes } from '@fortawesome/free-solid-svg-icons';
 import {
   ResponsiveContainer,
@@ -143,7 +144,7 @@ export default function Dashboard() {
         })
         .flat()
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // නවතම දැනුම්දීම් මුලින්
-        .slice(0, 5); // ඉහළම 5ක් පමණක් පෙන්වයි
+        .slice(0, 20); // ඉහළම 20ක් පමණක් පෙන්වයි
 
       // Payment notifications
       const paymentNotifications = fetchedOrders
@@ -215,6 +216,7 @@ export default function Dashboard() {
   // Dashboard UI එක
   return (
     <>
+    <Nav1/>
       <Nav />
       <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
@@ -266,7 +268,8 @@ export default function Dashboard() {
                   <ReactTooltip id="fsd-refresh-notifications" />
                 </button>
               </div>
-              <div className="space-y-3 max-h-72 lg:max-h-80 overflow-y-auto">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto">
+
                 {/* Payment notifications */}
                 {stats.paymentNotifications.map(notification => (
                   <div
@@ -335,46 +338,6 @@ export default function Dashboard() {
                       >
                         <FontAwesomeIcon icon={faSearch} />
                         <ReactTooltip id={`fsd-view-notification-${notification.id}`} />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Approved Orders Notification Box */}
-            <div className="fsd-approved-orders bg-white rounded-lg shadow-sm p-4 lg:p-6 mt-6">
-              <h3 className="text-lg font-semibold text-green-700 mb-4">
-                Approved Orders
-              </h3>
-              <div className="space-y-3 max-h-72 overflow-y-auto">
-                {approvedOrders.length === 0 ? (
-                  <p className="text-gray-600 text-sm text-center">No approved orders</p>
-                ) : (
-                  approvedOrders.map(order => (
-                    <div
-                      key={order._id}
-                      className="flex items-start justify-between p-3 rounded-md text-sm bg-green-50 border-l-2 border-green-500"
-                    >
-                      <div className="flex items-start">
-                        <FontAwesomeIcon icon={faCheckCircle} className="mr-2 mt-0.5 flex-shrink-0 text-green-600" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-gray-800 font-medium truncate">
-                            Order <span className="font-bold">{order.orderId}</span> approved by <span className="font-bold">{order.supplier?.name || 'N/A'}</span>
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Delivery: {format(new Date(order.deliveryDate), 'MMM dd, yyyy')}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => openModal(order)}
-                        className="text-fsd-primary-green hover:text-fsd-primary-green-hover transition-colors duration-150 ml-2 flex-shrink-0"
-                        data-tooltip-id={`fsd-view-approved-${order._id}`}
-                        data-tooltip-content="View Order Details"
-                      >
-                        <FontAwesomeIcon icon={faSearch} />
-                        <ReactTooltip id={`fsd-view-approved-${order._id}`} />
                       </button>
                     </div>
                   ))
@@ -530,6 +493,7 @@ export default function Dashboard() {
           </Modal>
         </div>
       </div>
+      
       <Footer />
     </>
   );
