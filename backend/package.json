@@ -14,6 +14,7 @@
     "dotenv": "^16.0.0",
     "express": "^4.18.2",
     "express-validator": "^7.2.1",
+    "fruit-seller-frontend": "file:../frontend",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.0.0",
     "multer": "^2.0.2",

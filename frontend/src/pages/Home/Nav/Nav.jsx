@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../Context/AuthContext.jsx";
 import {
-  FaUser,
   FaSignOutAlt,
   FaHome,
   FaCrown,
@@ -24,43 +23,20 @@ const Navbar = () => {
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
-    // Get cart count from per-user localStorage
-    const getCount = () => {
-      if (!user) return 0;
-      const uid = user._id || user.id || user.email;
-      const key = `cartCount_user_${uid}`;
-      return parseInt(localStorage.getItem(key) || '0');
-    };
-    setCartCount(getCount());
+    if (!user) return;
 
-    // Update on storage change (multi-tab support)
+    const uid = user._id || user.id || user.email;
+    const key = `cartCount_user_${uid}`;
+    setCartCount(parseInt(localStorage.getItem(key) || "0"));
+
     const handleStorage = (e) => {
-      // If storage key is user-scoped cart count for current user, update
-      if (!user) return;
-      const uid = user._id || user.id || user.email;
-      const key = `cartCount_user_${uid}`;
       if (e.key === key) {
         setCartCount(e.newValue ? parseInt(e.newValue) : 0);
       }
     };
-    // Also listen for a custom event so same-tab updates are reflected immediately
-    const handleCartUpdated = () => {
-      const current = (() => {
-        if (!user) return 0;
-        const uid = user._id || user.id || user.email;
-        const key = `cartCount_user_${uid}`;
-        return parseInt(localStorage.getItem(key) || '0');
-      })();
-      setCartCount(current);
-    };
-
     window.addEventListener("storage", handleStorage);
-    window.addEventListener('cart-updated', handleCartUpdated);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener('cart-updated', handleCartUpdated);
-    };
-  }, []);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -68,250 +44,151 @@ const Navbar = () => {
     setIsMobileMenuOpen(false);
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   return (
-    <nav className="bg-white shadow-soft border-b border-secondary-100">
+    <nav className="bg-gradient-to-r from-green-700 via-green-600 to-green-500 shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/home" className="flex items-center space-x-2">
-            <GiFruitBowl className="text-primary-600 text-2xl" />
-            <span className="text-xl font-bold text-secondary-900">
+            <GiFruitBowl className="text-white text-2xl" />
+            <span className="text-xl font-bold text-white tracking-wide">
               Taste of Ceylon
             </span>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link
-              to="/home"
-              className="text-secondary-600 hover:text-primary-600 font-medium"
-            >
-              <FaHome className="inline mr-2" /> Home
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-6 text-white font-medium">
+            <Link to="/home" className="hover:text-yellow-300 flex items-center">
+              <FaHome className="mr-1" /> Home
             </Link>
-            <Link
-              to="/products"
-              className="text-secondary-600 hover:text-primary-600 font-medium"
-            >
+            <Link to="/products" className="hover:text-yellow-300">
               Products
             </Link>
-            <Link
-              to="/about"
-              className="text-secondary-600 hover:text-primary-600 font-medium"
-            >
+            <Link to="/about" className="hover:text-yellow-300">
               About Us
             </Link>
-            <Link
-              to="/contact"
-              className="text-secondary-600 hover:text-primary-600 font-medium"
-            >
+            <Link to="/contact" className="hover:text-yellow-300">
               Contact
             </Link>
 
             {/* Role-based dashboards */}
             {user?.role === "admin" && (
-              <Link
-                to="/admin-dashboard"
-                className="text-secondary-600 hover:text-primary-600 font-medium"
-              >
-                <FaCrown className="inline mr-2" /> Admin Dashboard
+              <Link to="/admin-dashboard" className="hover:text-yellow-300">
+                <FaCrown className="inline mr-1" /> Admin
               </Link>
             )}
             {user?.role === "supplier" && (
-              <Link
-                to="/supplier-dashboard"
-                className="text-secondary-600 hover:text-primary-600 font-medium"
-              >
-                <FaTruck className="inline mr-2" /> Supplier Dashboard
+              <Link to="/supplier-dashboard" className="hover:text-yellow-300">
+                <FaTruck className="inline mr-1" /> Supplier
               </Link>
             )}
             {user?.role === "finance-manager" && (
-              <Link
-                to="/finance-dashboard"
-                className="text-secondary-600 hover:text-primary-600 font-medium"
-              >
-                <FaDollarSign className="inline mr-2" /> Finance Dashboard
+              <Link to="/finance-dashboard" className="hover:text-yellow-300">
+                <FaDollarSign className="inline mr-1" /> Finance
               </Link>
             )}
             {user?.role === "inventory-manager" && (
-              <Link
-                to="/inventory-dashboard"
-                className="text-secondary-600 hover:text-primary-600 font-medium"
-              >
-                <FaWarehouse className="inline mr-2" /> Inventory Dashboard
+              <Link to="/inventory-dashboard" className="hover:text-yellow-300">
+                <FaWarehouse className="inline mr-1" /> Inventory
               </Link>
             )}
             {user?.role === "order-manager" && (
-              <Link
-                to="/order-dashboard"
-                className="text-secondary-600 hover:text-primary-600 font-medium"
-              >
-                <FaClipboardList className="inline mr-2" /> Order Dashboard
+              <Link to="/order-dashboard" className="hover:text-yellow-300">
+                <FaClipboardList className="inline mr-1" /> Orders
               </Link>
             )}
           </div>
 
-          {/* Right Side (Cart + Auth/Profile) */}
+          {/* Right Side */}
           <div className="flex items-center space-x-4">
             {/* Cart */}
-            <Link
-              to="/cart"
-              className="relative text-secondary-600 hover:text-primary-600"
-              title="Cart"
-            >
-              <FaShoppingCart size={24} />
+            <Link to="/cart" className="relative text-white hover:text-yellow-300">
+              <FaShoppingCart size={22} />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full px-2 text-xs font-bold">
+                <span className="absolute -top-2 -right-2 bg-yellow-400 text-black rounded-full px-2 text-xs font-bold">
                   {cartCount}
                 </span>
               )}
             </Link>
 
+            {/* Auth */}
             {user ? (
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => navigate("/profile")}
-                  className="flex items-center space-x-2 group"
-                  aria-label="Go to profile"
+                  className="flex items-center group"
                 >
                   {user.profilePicture ? (
                     <img
                       src={user.profilePicture}
                       alt="Profile"
-                      className="w-8 h-8 rounded-full object-cover border"
+                      className="w-8 h-8 rounded-full object-cover border-2 border-white"
                     />
                   ) : (
-                    <FaUserCircle size={28} className="text-primary-500" />
+                    <FaUserCircle size={28} className="text-white" />
                   )}
-                  <span className="hidden sm:block text-sm font-medium text-secondary-700 group-hover:text-primary-600">
+                  <span className="hidden sm:block ml-2 text-sm font-medium group-hover:text-yellow-300 text-white">
                     {user.firstName} {user.lastName}
                   </span>
                 </button>
-
                 <button
                   onClick={handleLogout}
-                  className="border border-primary-500 text-primary-600 text-sm py-1.5 px-3 rounded hidden sm:block"
+                  className="hidden sm:block bg-white text-green-700 px-3 py-1 rounded-lg text-sm font-medium hover:bg-yellow-300 hover:text-black transition"
                 >
                   <FaSignOutAlt className="inline mr-1" /> Logout
-                </button>
-
-                {/* Mobile menu toggle */}
-                <button
-                  onClick={toggleMobileMenu}
-                  className="md:hidden p-2 rounded-lg text-secondary-600 hover:text-primary-600 hover:bg-primary-50"
-                >
-                  {isMobileMenuOpen ? (
-                    <FaTimes className="text-xl" />
-                  ) : (
-                    <FaBars className="text-xl" />
-                  )}
                 </button>
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link to="/login" className="border border-primary-500 text-primary-600 text-sm py-1.5 px-3 rounded">
+                <Link
+                  to="/login"
+                  className="bg-white text-green-700 px-3 py-1 rounded-lg text-sm font-medium hover:bg-yellow-300 hover:text-black transition"
+                >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-primary-500 hover:bg-primary-600 text-white text-sm py-1.5 px-3 rounded"
+                  className="bg-yellow-400 text-black px-3 py-1 rounded-lg text-sm font-bold hover:bg-white hover:text-green-700 transition"
                 >
                   Register
                 </Link>
               </div>
             )}
+
+            {/* Mobile menu toggle */}
+            <button
+              onClick={toggleMobileMenu}
+              className="md:hidden p-2 text-white hover:text-yellow-300"
+            >
+              {isMobileMenuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
+            </button>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-secondary-200 bg-white">
-            <div className="px-4 py-2 space-y-1">
-              <Link
-                to="/home"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2"
-              >
-                Home
-              </Link>
-              <Link
-                to="/products"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2"
-              >
-                Products
-              </Link>
-              <Link
-                to="/about"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2"
-              >
-                About Us
-              </Link>
-              <Link
-                to="/contact"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2"
-              >
-                Contact
-              </Link>
+          <div className="md:hidden bg-green-600 text-white shadow-lg rounded-b-lg">
+            <div className="px-4 py-3 space-y-2">
+              <Link to="/home" onClick={toggleMobileMenu} className="block py-1 hover:text-yellow-300">Home</Link>
+              <Link to="/products" onClick={toggleMobileMenu} className="block py-1 hover:text-yellow-300">Products</Link>
+              <Link to="/about" onClick={toggleMobileMenu} className="block py-1 hover:text-yellow-300">About Us</Link>
+              <Link to="/contact" onClick={toggleMobileMenu} className="block py-1 hover:text-yellow-300">Contact</Link>
 
               {/* Role-based */}
-              {user?.role === "admin" && (
-                <Link
-                  to="/admin-dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-2"
-                >
-                  Admin Dashboard
-                </Link>
-              )}
-              {user?.role === "supplier" && (
-                <Link
-                  to="/supplier-dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-2"
-                >
-                  Supplier Dashboard
-                </Link>
-              )}
-              {user?.role === "finance-manager" && (
-                <Link
-                  to="/finance-dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-2"
-                >
-                  Finance Dashboard
-                </Link>
-              )}
-              {user?.role === "inventory-manager" && (
-                <Link
-                  to="/inventory-dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-2"
-                >
-                  Inventory Dashboard
-                </Link>
-              )}
-              {user?.role === "order-manager" && (
-                <Link
-                  to="/order-dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-2"
-                >
-                  Order Dashboard
-                </Link>
-              )}
+              {user?.role === "admin" && <Link to="/admin-dashboard" onClick={toggleMobileMenu} className="block py-1 hover:text-yellow-300">Admin</Link>}
+              {user?.role === "supplier" && <Link to="/supplier-dashboard" onClick={toggleMobileMenu} className="block py-1 hover:text-yellow-300">Supplier</Link>}
+              {user?.role === "finance-manager" && <Link to="/finance-dashboard" onClick={toggleMobileMenu} className="block py-1 hover:text-yellow-300">Finance</Link>}
+              {user?.role === "inventory-manager" && <Link to="/inventory-dashboard" onClick={toggleMobileMenu} className="block py-1 hover:text-yellow-300">Inventory</Link>}
+              {user?.role === "order-manager" && <Link to="/order-dashboard" onClick={toggleMobileMenu} className="block py-1 hover:text-yellow-300">Orders</Link>}
 
               {user && (
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left py-2 text-red-600"
+                  className="w-full text-left py-2 text-red-200 hover:text-red-400"
                 >
-                  <FaSignOutAlt className="inline mr-2" /> Logout
+                  <FaSignOutAlt className="inline mr-1" /> Logout
                 </button>
               )}
             </div>

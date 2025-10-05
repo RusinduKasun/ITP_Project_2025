@@ -34,6 +34,12 @@
   .card {
     @apply bg-white rounded-xl shadow-soft border border-secondary-100;
   }
+
+  /* App level surfaces and palette helpers */
+  .bg-app { @apply bg-primary-50; }
+  .bg-surface { @apply bg-white; }
+  .btn-brown { @apply bg-brown-500 hover:bg-brown-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200; }
+  .text-brown { @apply text-brown-700; }
   
   .text-primary {
     @apply text-primary-600;

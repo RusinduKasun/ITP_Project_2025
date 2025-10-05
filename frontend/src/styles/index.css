@@ -4,21 +4,24 @@
 
 /* Custom Color Variables */
 :root {
-  --primary-green: #2d7d32;
-  --accent-orange: #ff9800;
-  --success-green: #4caf50;
-  --warning-orange: #ff9800;
-  --info-blue: #2196f3;
-  --destructive-red: #f44336;
-  --background-tint: #e8f5e9; /* Light tropical green tint */
-  --card-bg: #ffffff;
-  --text-primary: #1a3c1f;
-  --text-secondary: #4b5e4d;
+  /* 60-30-10 palette */
+  --primary: #4CAF50; /* green (60%) */
+  --primary-100: #e8f5e9;
+  --primary-200: #c8e6c9;
+  --secondary: #8D6E63; /* brown/earth (30%) */
+  --secondary-100: #efebe9;
+  --accent: #FF9800; /* orange (10%) */
+  --accent-100: #fff3e0;
+
+  --bg: #f7fbf7; /* soft background wash */
+  --surface: #ffffff; /* white cards */
+  --text-primary: #1f3d2f;
+  --text-secondary: #4b4b45;
 }
 
 /* Global Styles */
 body {
-  background-color: var(--background-tint);
+  background-color: var(--bg);
   color: var(--text-primary);
   font-family: "Inter", sans-serif;
   margin: 0;
@@ -27,8 +30,8 @@ body {
 
 /* Header Styles */
 header {
-  background: linear-gradient(to right, var(--primary-green), #4caf50);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(to right, var(--primary), var(--primary-200));
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
 }
 
 header h1 {
@@ -47,13 +50,13 @@ header span {
 } */
 
 nav a {
-  color: white;
+  color: var(--text-secondary);
   font-weight: 500;
-  transition: color 0.3s ease;
+  transition: color 0.15s ease;
 }
 
 nav a:hover {
-  color: var(--accent-orange);
+  color: var(--primary);
 }
 
 /* Main Container */
@@ -65,16 +68,16 @@ main {
 
 /* Card Styles */
 .card {
-  background-color: var(--card-bg);
+  background-color: var(--surface);
   border-radius: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(16, 24, 32, 0.06);
+  padding: 1.25rem;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(16, 24, 32, 0.08);
 }
 
 /* Status Badges */
@@ -115,43 +118,68 @@ main {
 /* Form Styles */
 input,
 select {
-  border: 1px solid #d1d5db;
+  border: 1px solid #e6e6e6;
   border-radius: 0.375rem;
   padding: 0.5rem;
   width: 100%;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
 input:focus,
 select:focus {
   outline: none;
-  border-color: var(--primary-green);
-  box-shadow: 0 0 0 3px rgba(45, 125, 50, 0.1);
+  border-color: var(--primary-200);
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.08);
 }
 
-Button Styles
-button {
-  background-color: #266b2a;
-  color: white;
+/* Button helpers */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-}
-.bg-primary-green{
-  background-color: var(--primary-green);
-}
-button:hover {
-  background-color: #266b2a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .06s ease, background-color .12s ease;
 }
 
-button.accent {
-  background-color: var(--accent-orange);
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: 1px solid rgba(0,0,0,0.04);
 }
 
-button.accent:hover {
-  background-color: #e68900;
+.btn-primary:hover { filter: brightness(.98); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid rgba(0,0,0,0.04);
 }
+
+.bg-primary { background-color: var(--primary); }
+.bg-primary-100 { background-color: var(--primary-100); }
+.bg-primary-200 { background-color: var(--primary-200); }
+.bg-secondary { background-color: var(--secondary); }
+.bg-accent { background-color: var(--accent); }
+.bg-accent-100 { background-color: var(--accent-100); }
+.bg-surface { background-color: var(--surface); }
+.bg-app { background-color: var(--bg); }
+
+.text-primary { color: var(--primary); }
+.text-secondary { color: var(--secondary); }
+.text-accent { color: var(--accent); }
+
+.badge {
+  display:inline-block; padding:.25rem .5rem; border-radius:.375rem; font-weight:600; font-size:.75rem;
+}
+.badge-success { background: var(--primary); color: white; }
+.badge-warning { background: var(--accent); color: white; }
+.badge-muted { background: var(--secondary); color: white; }
 
 /* Footer Styles */
 footer {
