@@ -27,7 +27,7 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
-
+// Main Calendar component එක export කරනවා
 export default function Calendar() {
   // State variables (ස්ථාවරයන්) නිර්වචනය කරනවා
   const [orders, setOrders] = useState([]);
